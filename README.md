@@ -2,6 +2,14 @@
 
 AI-powered UI feedback system. Annotate webpage elements and send feedback directly to OpenCode sessions via MCP sampling.
 
+## Installation
+
+```bash
+git clone --recursive https://github.com/GutMutCode/agentation.git && cd agentation && ./setup.sh
+```
+
+Then load Chrome extension: `chrome://extensions/` → Developer mode → Load unpacked → `packages/extension`
+
 ## Architecture
 
 ```
@@ -31,35 +39,13 @@ AI-powered UI feedback system. Annotate webpage elements and send feedback direc
 
 > **Note:** Windows support is experimental. macOS and Linux are fully supported.
 
-## Quick Start
+## Setup Options
 
-### Automated Setup (Recommended)
-
-```bash
-git clone --recursive https://github.com/GutMutCode/agentation.git
-cd agentation
-./setup.sh
-```
-
-The script will:
-- Check dependencies (node, pnpm)
-- Build agentation packages
-- Download OpenCode binary for your platform
-- Configure `~/.config/opencode/opencode.json`
-
-**Options:**
 ```bash
 ./setup.sh              # Download pre-built binary (default)
 ./setup.sh --source     # Build OpenCode from source (requires bun)
-./setup.sh --skip-build # Skip agentation build
+./setup.sh --force      # Re-download/rebuild even if already installed
 ```
-
-After setup, manually load the Chrome extension (security restriction):
-1. Open `chrome://extensions/`
-2. Enable **Developer mode** (top right)
-3. Click **Load unpacked** → select `packages/extension`
-
----
 
 ### Manual Setup
 
