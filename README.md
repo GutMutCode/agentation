@@ -208,4 +208,6 @@ pnpm typecheck  # Type check
 
 ## License
 
-MIT
+MIT — See [LICENSE](LICENSE)
+
+This project is an **independent implementation** inspired by [benjitaylor/agentation](https://github.com/benjitaylor/agentation). No code was copied from the original project.
