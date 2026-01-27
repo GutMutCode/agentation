@@ -206,7 +206,10 @@ build_agentation() {
 
     echo "Building packages..."
     if [[ "$PKG_MANAGER" == "npm" ]]; then
-        npm run build
+        echo "Building with npm workspaces..."
+        npm run build -w @agentation/shared
+        npm run build -w @agentation/mcp-server
+        npm run build -w @agentation/extension
     else
         pnpm build
     fi

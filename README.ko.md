@@ -40,10 +40,12 @@ git clone https://github.com/GutMutCode/agentation.git
 ## 설치
 
 ```bash
-git clone --recursive https://github.com/GutMutCode/agentation.git && cd agentation && ./setup.sh
+git clone https://github.com/GutMutCode/agentation.git && cd agentation && ./setup.sh
 ```
 
 그 다음 Chrome Extension 로드: `chrome://extensions/` → 개발자 모드 → 압축해제된 확장 프로그램 로드 → `packages/extension`
+
+> **참고:** `--recursive` 플래그는 OpenCode를 소스에서 빌드할 때만 필요합니다 (`./setup.sh --source`). 기본적으로 `setup.sh`는 사전 빌드된 바이너리를 다운로드합니다.
 
 ## 아키텍처
 
@@ -92,6 +94,11 @@ git clone --recursive https://github.com/GutMutCode/agentation.git && cd agentat
 #### 1. Clone
 
 ```bash
+# 사전 빌드된 바이너리 사용 (권장)
+git clone https://github.com/GutMutCode/agentation.git
+cd agentation
+
+# 소스에서 빌드 (bun 필요)
 git clone --recursive https://github.com/GutMutCode/agentation.git
 cd agentation
 ```

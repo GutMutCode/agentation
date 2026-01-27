@@ -12,9 +12,9 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit",
+    "build": "npx tsc",
+    "dev": "npx tsc --watch",
+    "typecheck": "npx tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

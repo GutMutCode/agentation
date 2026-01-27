@@ -15,19 +15,19 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
+    "build": "npx tsc",
+    "dev": "npx tsc --watch",
     "start": "node dist/cli.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npx tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@agentation/shared": "file:../shared",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "ws": "^8.18.0",
     "zod": "^3.24.0"
   },
   "devDependencies": {
-    "@agentation/shared": "file:../shared",
     "@types/ws": "^8.5.0",
     "typescript": "^5.7.0"
   }

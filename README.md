@@ -40,10 +40,12 @@ git clone https://github.com/GutMutCode/agentation.git
 ## Installation
 
 ```bash
-git clone --recursive https://github.com/GutMutCode/agentation.git && cd agentation && ./setup.sh
+git clone https://github.com/GutMutCode/agentation.git && cd agentation && ./setup.sh
 ```
 
 Then load Chrome extension: `chrome://extensions/` → Developer mode → Load unpacked → `packages/extension`
+
+> **Note:** The `--recursive` flag is only needed if you want to build OpenCode from source (`./setup.sh --source`). By default, `setup.sh` downloads pre-built binaries.
 
 ## Architecture
 
@@ -92,6 +94,11 @@ Then load Chrome extension: `chrome://extensions/` → Developer mode → Load u
 #### 1. Clone
 
 ```bash
+# For pre-built binary (recommended)
+git clone https://github.com/GutMutCode/agentation.git
+cd agentation
+
+# For building from source (requires bun)
 git clone --recursive https://github.com/GutMutCode/agentation.git
 cd agentation
 ```
