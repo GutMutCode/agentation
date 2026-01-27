@@ -16,13 +16,14 @@ AI-powered UI feedback system. Annotate webpage elements and send feedback direc
 >
 > MCP setup is only needed for **Send to AI** (direct OpenCode integration).
 
-| Feature | Extension Only | With MCP Setup |
-|---------|----------------|----------------|
-| Annotate elements | ✅ | ✅ |
-| Copy to Clipboard | ✅ | ✅ |
-| Send to AI (direct) | ❌ | ✅ |
+| Feature             | Extension Only | With MCP Setup |
+| ------------------- | -------------- | -------------- |
+| Annotate elements   | ✅             | ✅             |
+| Copy to Clipboard   | ✅             | ✅             |
+| Send to AI (direct) | ❌             | ✅             |
 
 **Extension-only install:**
+
 ```bash
 git clone https://github.com/GutMutCode/agentation.git
 # Then: chrome://extensions/ → Developer mode → Load unpacked → packages/extension
@@ -30,12 +31,12 @@ git clone https://github.com/GutMutCode/agentation.git
 
 ## Why This Fork?
 
-| | [Original](https://github.com/benjitaylor/agentation) | This Project |
-|---|---|---|
-| **Type** | React component | Chrome Extension |
-| **Usage** | `npm install` in your app | Works on **any website** |
-| **Output** | Copy to clipboard | Direct to AI via MCP |
-| **Integration** | Manual paste to AI | Auto-sends to OpenCode session |
+|                 | [Original](https://github.com/benjitaylor/agentation) | This Project                   |
+| --------------- | ----------------------------------------------------- | ------------------------------ |
+| **Type**        | React component                                       | Chrome Extension               |
+| **Usage**       | `npm install` in your app                             | Works on **any website**       |
+| **Output**      | Copy to clipboard                                     | Direct to AI via MCP           |
+| **Integration** | Manual paste to AI                                    | Auto-sends to OpenCode session |
 
 ## Installation
 
@@ -116,12 +117,12 @@ pnpm build
 
 Download from [OpenCode Fork Releases](https://github.com/GutMutCode/opencode/releases):
 
-| Platform | File |
-|----------|------|
+| Platform            | File                           |
+| ------------------- | ------------------------------ |
 | macOS Apple Silicon | `opencode-darwin-arm64.tar.gz` |
-| Linux x64 | `opencode-linux-x64.tar.gz` |
-| Linux ARM64 | `opencode-linux-arm64.tar.gz` |
-| Windows x64 | `opencode-windows-x64.zip` |
+| Linux x64           | `opencode-linux-x64.tar.gz`    |
+| Linux ARM64         | `opencode-linux-arm64.tar.gz`  |
+| Windows x64         | `opencode-windows-x64.zip`     |
 
 ```bash
 # Example for macOS Apple Silicon
@@ -135,6 +136,7 @@ Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode
 > **Note:** macOS Intel users must build from source (Option B).
 
 **Option B: Build from source**
+
 ```bash
 cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
@@ -161,6 +163,7 @@ Create `~/.config/opencode/agentation.json`:
 ```
 
 **Replace `AGENTATION_PATH`** with your actual path:
+
 ```bash
 pwd  # Example output: /Users/yourname/agentation
 ```
@@ -210,25 +213,28 @@ agentation
 ## Troubleshooting
 
 ### WebSocket not connected
+
 - Check if OpenCode is running
 - Check if agentation MCP server is loaded: Press `Ctrl+M` in OpenCode TUI
 
 ### Sampling request not appearing
+
 - Verify `sampling` config in `opencode.json`
 - Check mode is not `deny`
 
 ### Extension not showing toolbar
+
 - Refresh the webpage
 - Check extension is enabled in `chrome://extensions/`
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| `packages/extension` | Chrome extension for UI annotation |
+| Package               | Description                          |
+| --------------------- | ------------------------------------ |
+| `packages/extension`  | Chrome extension for UI annotation   |
 | `packages/mcp-server` | MCP server with WebSocket + sampling |
-| `packages/shared` | Shared types |
-| `external/opencode` | OpenCode fork (submodule) |
+| `packages/shared`     | Shared types                         |
+| `external/opencode`   | OpenCode fork (submodule)            |
 
 ## Uninstall
 
@@ -245,19 +251,19 @@ Then manually remove Chrome extension: `chrome://extensions/` → Find Agentatio
 
 For the best experience, use Agentation together with [Playwriter](https://github.com/remorses/playwriter) — a browser automation MCP that controls your existing Chrome.
 
-| Tool | Role |
-|------|------|
-| **Agentation** | Annotate UI elements → Send feedback to AI |
+| Tool           | Role                                         |
+| -------------- | -------------------------------------------- |
+| **Agentation** | Annotate UI elements → Send feedback to AI   |
 | **Playwriter** | AI controls browser → Test, verify, interact |
 
 ### Why Playwriter?
 
-| Feature | Playwright MCP | Playwriter |
-|---------|----------------|------------|
-| Browser | Spawns new Chrome | Uses your Chrome |
-| Login state | Fresh (logged out) | Already logged in |
-| Extensions | None | Your existing ones |
-| Bot detection | Always detected | Can bypass |
+| Feature       | Playwright MCP       | Playwriter              |
+| ------------- | -------------------- | ----------------------- |
+| Browser       | Spawns new Chrome    | Uses your Chrome        |
+| Login state   | Fresh (logged out)   | Already logged in       |
+| Extensions    | None                 | Your existing ones      |
+| Bot detection | Always detected      | Can bypass              |
 | Context usage | Screenshots (100KB+) | A11y snapshots (5-20KB) |
 
 ### Setup
@@ -276,7 +282,7 @@ For the best experience, use Agentation together with [Playwriter](https://githu
     "playwriter": {
       "type": "local",
       "command": ["npx", "-y", "playwriter@latest"],
-      "env": {
+      "environment": {
         "PLAYWRITER_AUTO_ENABLE": "1"
       }
     }

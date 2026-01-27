@@ -16,13 +16,14 @@ AI 기반 UI 피드백 시스템. 웹페이지 요소에 어노테이션을 달�
 >
 > MCP 설정은 **AI에게 전송** (OpenCode 직접 연동) 기능에만 필요합니다.
 
-| 기능 | Extension만 | MCP 설정 포함 |
-|------|-------------|---------------|
-| 요소 어노테이션 | ✅ | ✅ |
-| 클립보드에 복사 | ✅ | ✅ |
-| AI에게 전송 (직접) | ❌ | ✅ |
+| 기능               | Extension만 | MCP 설정 포함 |
+| ------------------ | ----------- | ------------- |
+| 요소 어노테이션    | ✅          | ✅            |
+| 클립보드에 복사    | ✅          | ✅            |
+| AI에게 전송 (직접) | ❌          | ✅            |
 
 **Extension만 설치:**
+
 ```bash
 git clone https://github.com/GutMutCode/agentation.git
 # 그 다음: chrome://extensions/ → 개발자 모드 → 압축해제된 확장 프로그램 로드 → packages/extension
@@ -30,12 +31,12 @@ git clone https://github.com/GutMutCode/agentation.git
 
 ## 왜 이 Fork인가?
 
-| | [원본](https://github.com/benjitaylor/agentation) | 이 프로젝트 |
-|---|---|---|
-| **타입** | React 컴포넌트 | Chrome Extension |
-| **사용법** | 앱에 `npm install` | **모든 웹사이트**에서 작동 |
-| **출력** | 클립보드에 복사 | MCP를 통해 AI로 직접 전송 |
-| **연동** | AI에 수동 붙여넣기 | OpenCode 세션으로 자동 전송 |
+|            | [원본](https://github.com/benjitaylor/agentation) | 이 프로젝트                 |
+| ---------- | ------------------------------------------------- | --------------------------- |
+| **타입**   | React 컴포넌트                                    | Chrome Extension            |
+| **사용법** | 앱에 `npm install`                                | **모든 웹사이트**에서 작동  |
+| **출력**   | 클립보드에 복사                                   | MCP를 통해 AI로 직접 전송   |
+| **연동**   | AI에 수동 붙여넣기                                | OpenCode 세션으로 자동 전송 |
 
 ## 설치
 
@@ -116,12 +117,12 @@ pnpm build
 
 [OpenCode Fork Releases](https://github.com/GutMutCode/opencode/releases)에서 다운로드:
 
-| 플랫폼 | 파일 |
-|--------|------|
+| 플랫폼              | 파일                           |
+| ------------------- | ------------------------------ |
 | macOS Apple Silicon | `opencode-darwin-arm64.tar.gz` |
-| Linux x64 | `opencode-linux-x64.tar.gz` |
-| Linux ARM64 | `opencode-linux-arm64.tar.gz` |
-| Windows x64 | `opencode-windows-x64.zip` |
+| Linux x64           | `opencode-linux-x64.tar.gz`    |
+| Linux ARM64         | `opencode-linux-arm64.tar.gz`  |
+| Windows x64         | `opencode-windows-x64.zip`     |
 
 ```bash
 # macOS Apple Silicon 예시
@@ -135,6 +136,7 @@ Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode
 > **참고:** macOS Intel 사용자는 소스에서 빌드해야 합니다 (옵션 B).
 
 **옵션 B: 소스에서 빌드**
+
 ```bash
 cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
@@ -161,6 +163,7 @@ cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
 
 **`AGENTATION_PATH`를 실제 경로로 교체:**
+
 ```bash
 pwd  # 예시 출력: /Users/yourname/agentation
 ```
@@ -210,25 +213,28 @@ agentation
 ## 문제 해결
 
 ### WebSocket 연결 안됨
+
 - OpenCode가 실행 중인지 확인
 - agentation MCP 서버가 로드되었는지 확인: OpenCode TUI에서 `Ctrl+M` 누르기
 
 ### 샘플링 요청이 나타나지 않음
+
 - `opencode.json`의 `sampling` 설정 확인
 - 모드가 `deny`가 아닌지 확인
 
 ### Extension 툴바가 안 보임
+
 - 웹페이지 새로고침
 - `chrome://extensions/`에서 Extension이 활성화되어 있는지 확인
 
 ## 패키지
 
-| 패키지 | 설명 |
-|--------|------|
-| `packages/extension` | UI 어노테이션용 Chrome Extension |
+| 패키지                | 설명                                 |
+| --------------------- | ------------------------------------ |
+| `packages/extension`  | UI 어노테이션용 Chrome Extension     |
 | `packages/mcp-server` | WebSocket + 샘플링이 포함된 MCP 서버 |
-| `packages/shared` | 공유 타입 |
-| `external/opencode` | OpenCode fork (서브모듈) |
+| `packages/shared`     | 공유 타입                            |
+| `external/opencode`   | OpenCode fork (서브모듈)             |
 
 ## 제거
 
@@ -245,19 +251,19 @@ Chrome Extension은 수동 제거: `chrome://extensions/` → Agentation 찾기 
 
 최상의 경험을 위해 [Playwriter](https://github.com/remorses/playwriter)와 함께 사용하세요 — 기존 Chrome을 제어하는 브라우저 자동화 MCP입니다.
 
-| 도구 | 역할 |
-|------|------|
-| **Agentation** | UI 요소 어노테이션 → AI에게 피드백 전송 |
+| 도구           | 역할                                        |
+| -------------- | ------------------------------------------- |
+| **Agentation** | UI 요소 어노테이션 → AI에게 피드백 전송     |
 | **Playwriter** | AI가 브라우저 제어 → 테스트, 검증, 상호작용 |
 
 ### 왜 Playwriter인가?
 
-| 기능 | Playwright MCP | Playwriter |
-|------|----------------|------------|
-| 브라우저 | 새 Chrome 실행 | 기존 Chrome 사용 |
-| 로그인 상태 | 새로 (로그아웃됨) | 이미 로그인됨 |
-| 확장 프로그램 | 없음 | 기존 것 사용 |
-| 봇 탐지 | 항상 탐지됨 | 우회 가능 |
+| 기능            | Playwright MCP    | Playwriter           |
+| --------------- | ----------------- | -------------------- |
+| 브라우저        | 새 Chrome 실행    | 기존 Chrome 사용     |
+| 로그인 상태     | 새로 (로그아웃됨) | 이미 로그인됨        |
+| 확장 프로그램   | 없음              | 기존 것 사용         |
+| 봇 탐지         | 항상 탐지됨       | 우회 가능            |
 | 컨텍스트 사용량 | 스크린샷 (100KB+) | A11y 스냅샷 (5-20KB) |
 
 ### 설정
@@ -276,7 +282,7 @@ Chrome Extension은 수동 제거: `chrome://extensions/` → Agentation 찾기 
     "playwriter": {
       "type": "local",
       "command": ["npx", "-y", "playwriter@latest"],
-      "env": {
+      "environment": {
         "PLAYWRITER_AUTO_ENABLE": "1"
       }
     }
