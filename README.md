@@ -2,6 +2,18 @@
 
 AI-powered UI feedback system. Annotate webpage elements and send feedback directly to OpenCode sessions via MCP sampling.
 
+> **Inspired by [benjitaylor/agentation](https://github.com/benjitaylor/agentation)** — the original visual feedback tool for AI agents.
+> See [my proposal](https://github.com/benjitaylor/agentation/issues/26) for a Chrome Extension version.
+
+## Why This Fork?
+
+| | [Original](https://github.com/benjitaylor/agentation) | This Project |
+|---|---|---|
+| **Type** | React component | Chrome Extension |
+| **Usage** | `npm install` in your app | Works on **any website** |
+| **Output** | Copy to clipboard | Direct to AI via MCP |
+| **Integration** | Manual paste to AI | Auto-sends to OpenCode session |
+
 ## Installation
 
 ```bash
@@ -188,6 +200,11 @@ agentation
 pnpm dev        # Watch mode
 pnpm typecheck  # Type check
 ```
+
+## Acknowledgments
+
+- [benjitaylor/agentation](https://github.com/benjitaylor/agentation) — Original concept and inspiration
+- [opencode-ai/opencode](https://github.com/opencode-ai/opencode) — Terminal-based AI coding assistant
 
 ## License
 
