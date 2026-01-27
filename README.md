@@ -49,14 +49,23 @@ pnpm build
 
 ### 3. Install OpenCode Fork
 
-**Option A: Download pre-built binary** (when available)
+**Option A: Download pre-built binary**
 
 Download from [OpenCode Fork Releases](https://github.com/GutMutCode/opencode/releases):
+
+| Platform | File |
+|----------|------|
+| macOS Apple Silicon | `opencode-darwin-arm64.tar.gz` |
+| Linux x64 | `opencode-linux-x64.tar.gz` |
+| Linux ARM64 | `opencode-linux-arm64.tar.gz` |
+
 ```bash
 # Example for macOS Apple Silicon
 tar -xzf opencode-darwin-arm64.tar.gz
 mv opencode-darwin-arm64 external/opencode/packages/opencode/dist/
 ```
+
+> **Note:** macOS Intel users must build from source (Option B).
 
 **Option B: Build from source**
 ```bash
