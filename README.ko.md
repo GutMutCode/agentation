@@ -139,9 +139,9 @@ Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode
 cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
 
-#### 4. OpenCode 설정
+#### 4. Agentation 설정
 
-`~/.config/opencode/opencode.json` 생성 또는 편집:
+`~/.config/opencode/agentation.json` 생성:
 
 ```json
 {
@@ -165,6 +165,8 @@ cd external/opencode/packages/opencode && bun run build && cd ../../../..
 pwd  # 예시 출력: /Users/yourname/agentation
 ```
 
+> **참고:** 이 설정은 `opencode.json`과 별개입니다. `agentation` 실행 시 기존 OpenCode 설정(plugins, providers 등)과 병합됩니다.
+
 **샘플링 모드:**
 | 모드 | 동작 |
 |------|------|
@@ -172,7 +174,7 @@ pwd  # 예시 출력: /Users/yourname/agentation
 | `prompt` | 매번 승인 요청 |
 | `deny` | 모든 요청 차단 |
 
-> **보안 참고:** AI 요청마다 수동 승인을 원하면 `opencode.json`에서 `"mode": "auto"`를 `"mode": "prompt"`로 변경하세요. 각 피드백 처리 전에 Allow/Deny 대화상자가 표시됩니다.
+> **보안 참고:** AI 요청마다 수동 승인을 원하면 `"mode": "auto"`를 `"mode": "prompt"`로 변경하세요. 각 피드백 처리 전에 Allow/Deny 대화상자가 표시됩니다.
 
 #### 5. Chrome Extension 로드
 
@@ -232,10 +234,10 @@ agentation
 
 ```bash
 ./uninstall.sh              # 바이너리와 빌드 결과물 제거
-./uninstall.sh --keep-project  # 심볼릭 링크만 제거
+./uninstall.sh --keep-project  # wrapper 스크립트만 제거
 ```
 
-> **참고:** 이 스크립트는 `opencode.json`에서 agentation 항목만 제거합니다 (`jq` 필요). 다른 설정은 유지됩니다.
+> **참고:** `agentation.json`만 삭제됩니다. `opencode.json` 설정은 건드리지 않습니다.
 
 Chrome Extension은 수동 제거: `chrome://extensions/` → Agentation 찾기 → 삭제
 

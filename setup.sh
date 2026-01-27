@@ -13,7 +13,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OPENCODE_SUBMODULE_DIR="$SCRIPT_DIR/external/opencode/packages/opencode"
 OPENCODE_BIN_DIR="$SCRIPT_DIR/.opencode"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/opencode"
-CONFIG_FILE="$CONFIG_DIR/opencode.json"
+CONFIG_FILE="$CONFIG_DIR/agentation.json"
 
 # Options
 BUILD_FROM_SOURCE=false
@@ -305,49 +305,20 @@ build_opencode() {
     print_success "OpenCode built successfully"
 }
 
-# Configure opencode.json
+# Configure agentation.json
 configure_opencode() {
-    print_step "Configuring OpenCode..."
+    print_step "Configuring Agentation..."
 
     mkdir -p "$CONFIG_DIR"
 
     local mcp_command="$SCRIPT_DIR/packages/mcp-server/dist/cli.js"
 
-    # Check if config exists
-    if [[ -f "$CONFIG_FILE" ]]; then
-        print_warning "Existing config found: $CONFIG_FILE"
-
-        # Check if agentation is already configured
-        if grep -q '"agentation"' "$CONFIG_FILE" 2>/dev/null; then
-            print_success "Agentation already configured in opencode.json"
-            return
-        fi
-
-        echo ""
-        echo "Please manually add the following to your opencode.json:"
-        echo ""
-        cat <<EOF
-{
-  "mcp": {
-    "agentation": {
-      "type": "local",
-      "command": ["node", "$mcp_command"]
-    }
-  },
-  "sampling": {
-    "agentation": {
-      "mode": "auto",
-      "maxTokens": 4096
-    }
-  }
-}
-EOF
-        echo ""
-        print_warning "Merge the above into your existing config"
+    if [[ -f "$CONFIG_FILE" && "$FORCE" != true ]]; then
+        print_success "Config already exists: $CONFIG_FILE"
+        echo "  Use --force to overwrite"
         return
     fi
 
-    # Create new config
     cat > "$CONFIG_FILE" <<EOF
 {
   "mcp": {
@@ -366,9 +337,10 @@ EOF
 EOF
 
     print_success "Created config: $CONFIG_FILE"
+    echo "  This will be merged with your existing opencode.json settings"
 }
 
-# Create symlink or batch script for easy access
+# Create wrapper script for easy access
 create_symlink() {
     local platform="$1"
     local bin_dir="$HOME/.local/bin"
@@ -376,7 +348,6 @@ create_symlink() {
 
     mkdir -p "$bin_dir"
 
-    # Determine source binary path based on build type
     if [[ "$BUILD_FROM_SOURCE" == true ]]; then
         source_bin="$OPENCODE_SUBMODULE_DIR/dist/opencode-$platform/bin/opencode"
     else
@@ -387,10 +358,11 @@ create_symlink() {
         source_bin="${source_bin}.exe"
         local target_cmd="$bin_dir/agentation.cmd"
 
-        print_step "Creating batch script..."
+        print_step "Creating wrapper script..."
 
         cat > "$target_cmd" <<EOF
 @echo off
+set OPENCODE_CONFIG=$CONFIG_FILE
 "$source_bin" %*
 EOF
 
@@ -411,14 +383,20 @@ EOF
 
     local target_bin="$bin_dir/agentation"
 
-    print_step "Creating symlink..."
+    print_step "Creating wrapper script..."
 
     if [[ -L "$target_bin" || -e "$target_bin" ]]; then
         rm -f "$target_bin"
     fi
 
-    ln -sf "$source_bin" "$target_bin"
-    print_success "Created: $target_bin -> $source_bin"
+    cat > "$target_bin" <<EOF
+#!/bin/bash
+export OPENCODE_CONFIG="$CONFIG_FILE"
+exec "$source_bin" "\$@"
+EOF
+    chmod +x "$target_bin"
+
+    print_success "Created: $target_bin"
 
     if [[ ":$PATH:" != *":$bin_dir:"* ]]; then
         echo ""

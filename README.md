@@ -139,9 +139,9 @@ Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode
 cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
 
-#### 4. Configure OpenCode
+#### 4. Configure Agentation
 
-Create or edit `~/.config/opencode/opencode.json`:
+Create `~/.config/opencode/agentation.json`:
 
 ```json
 {
@@ -165,6 +165,8 @@ Create or edit `~/.config/opencode/opencode.json`:
 pwd  # Example output: /Users/yourname/agentation
 ```
 
+> **Note:** This config is separate from `opencode.json`. When running `agentation`, it will be merged with your existing OpenCode settings (plugins, providers, etc.).
+
 **Sampling modes:**
 | Mode | Behavior |
 |------|----------|
@@ -172,7 +174,7 @@ pwd  # Example output: /Users/yourname/agentation
 | `prompt` | Ask for approval each time |
 | `deny` | Block all requests |
 
-> **Security Note:** If you want manual approval for each AI request, change `"mode": "auto"` to `"mode": "prompt"` in your `opencode.json`. This shows an Allow/Deny dialog before processing each feedback.
+> **Security Note:** If you want manual approval for each AI request, change `"mode": "auto"` to `"mode": "prompt"`. This shows an Allow/Deny dialog before processing each feedback.
 
 #### 5. Load Chrome Extension
 
@@ -232,10 +234,10 @@ agentation
 
 ```bash
 ./uninstall.sh              # Remove binaries and build artifacts
-./uninstall.sh --keep-project  # Only remove symlinks
+./uninstall.sh --keep-project  # Only remove wrapper scripts
 ```
 
-> **Note:** This script only removes agentation entries from `opencode.json` (requires `jq`). Your other settings are preserved.
+> **Note:** This removes `agentation.json` only. Your `opencode.json` settings are untouched.
 
 Then manually remove Chrome extension: `chrome://extensions/` → Find Agentation → Remove
 

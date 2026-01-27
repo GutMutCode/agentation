@@ -8,7 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/opencode.json"
+CONFIG_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agentation.json"
 BIN_DIR="$HOME/.local/bin"
 
 print_step() { echo -e "\n${BLUE}==>${NC} ${1}"; }
@@ -26,8 +26,7 @@ Options:
     --keep-project  Keep project folder (only remove symlinks and binaries)
     -h, --help      Show this help message
 
-Note: This script only removes agentation entries from opencode.json (requires jq).
-      Your other settings are preserved.
+Note: This removes agentation.json only. Your opencode.json settings are untouched.
 EOF
     exit 0
 }
@@ -50,7 +49,7 @@ echo -e "${NC}"
 echo "Agentation Uninstaller"
 echo ""
 
-print_step "Removing symlinks..."
+print_step "Removing wrapper scripts..."
 
 if [[ -L "$BIN_DIR/agentation" ]]; then
     rm -f "$BIN_DIR/agentation"
@@ -76,29 +75,13 @@ else
     print_warning "Not found: $SCRIPT_DIR/.opencode"
 fi
 
-print_step "Configuration cleanup..."
+print_step "Removing configuration..."
 
 if [[ -f "$CONFIG_FILE" ]]; then
-    if grep -q '"agentation"' "$CONFIG_FILE" 2>/dev/null; then
-        if command -v jq &> /dev/null; then
-            jq 'del(.mcp.agentation, .sampling)' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-            print_success "Removed agentation entries from config"
-        else
-            print_warning "jq not found. Please manually remove agentation entries from:"
-            echo "  $CONFIG_FILE"
-            echo ""
-            echo "  Remove these sections:"
-            echo "    - mcp.agentation"
-            echo "    - sampling (entire section)"
-            echo ""
-            echo "  Or install jq and run:"
-            echo "    jq 'del(.mcp.agentation, .sampling)' $CONFIG_FILE > tmp.json && mv tmp.json $CONFIG_FILE"
-        fi
-    else
-        print_success "No agentation config found (already clean)"
-    fi
+    rm -f "$CONFIG_FILE"
+    print_success "Removed: $CONFIG_FILE"
 else
-    print_success "No config file to clean"
+    print_warning "Not found: $CONFIG_FILE"
 fi
 
 print_step "Cleaning build artifacts..."
