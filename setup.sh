@@ -17,6 +17,7 @@ CONFIG_FILE="$CONFIG_DIR/opencode.json"
 # Options
 BUILD_FROM_SOURCE=false
 SKIP_BUILD=false
+FORCE=false
 
 print_step() {
     echo -e "\n${BLUE}==>${NC} ${1}"
@@ -41,11 +42,13 @@ Usage: ./setup.sh [OPTIONS]
 Options:
     --source        Build OpenCode from source instead of downloading binary
     --skip-build    Skip agentation build (use if already built)
+    --force         Force re-download/rebuild even if already installed
     -h, --help      Show this help message
 
 Examples:
     ./setup.sh              # Download pre-built OpenCode binary
     ./setup.sh --source     # Build OpenCode from source (requires bun)
+    ./setup.sh --force      # Re-download even if already installed
 EOF
     exit 0
 }
@@ -59,6 +62,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-build)
             SKIP_BUILD=true
+            shift
+            ;;
+        --force)
+            FORCE=true
             shift
             ;;
         -h|--help)
@@ -172,6 +179,15 @@ build_agentation() {
         return
     fi
 
+    local mcp_dist="$SCRIPT_DIR/packages/mcp-server/dist"
+
+    if [[ -d "$mcp_dist" && "$FORCE" != true ]]; then
+        print_step "Agentation already built"
+        print_success "Found: $mcp_dist"
+        echo "  Use --force to rebuild"
+        return
+    fi
+
     print_step "Building agentation..."
 
     cd "$SCRIPT_DIR"
@@ -192,6 +208,14 @@ download_opencode() {
     local platform="$1"
     local release_url="https://github.com/GutMutCode/opencode/releases/latest/download"
     local dist_dir="$OPENCODE_DIR/dist"
+    local binary_dir="$dist_dir/opencode-$platform"
+
+    if [[ -d "$binary_dir" && "$FORCE" != true ]]; then
+        print_step "OpenCode binary already exists"
+        print_success "Found: $binary_dir"
+        echo "  Use --force to re-download"
+        return
+    fi
 
     print_step "Downloading OpenCode binary for $platform..."
 
@@ -232,6 +256,16 @@ download_opencode() {
 
 # Build OpenCode from source
 build_opencode() {
+    local platform="$1"
+    local binary_dir="$OPENCODE_DIR/dist/opencode-$platform"
+
+    if [[ -d "$binary_dir" && "$FORCE" != true ]]; then
+        print_step "OpenCode already built"
+        print_success "Found: $binary_dir"
+        echo "  Use --force to rebuild"
+        return
+    fi
+
     print_step "Building OpenCode from source..."
 
     cd "$OPENCODE_DIR"
@@ -374,7 +408,7 @@ main() {
     build_agentation
 
     if [[ "$BUILD_FROM_SOURCE" == true ]]; then
-        build_opencode
+        build_opencode "$platform"
     else
         download_opencode "$platform"
     fi
