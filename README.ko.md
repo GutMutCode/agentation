@@ -264,7 +264,33 @@ Chrome Extension은 수동 제거: `chrome://extensions/` → Agentation 찾기 
 
 1. [Playwriter Chrome Extension](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkffahnhfhe) 설치
 2. 탭에서 확장 프로그램 아이콘 클릭 (연결되면 녹색으로 변함)
-3. MCP 설정에 추가하거나 CLI 사용: `npm i -g playwriter`
+3. `~/.config/opencode/agentation.json`에 추가:
+
+```json
+{
+  "mcp": {
+    "agentation": {
+      "type": "local",
+      "command": ["node", "AGENTATION_PATH/packages/mcp-server/dist/cli.js"]
+    },
+    "playwriter": {
+      "type": "local",
+      "command": ["npx", "-y", "playwriter@latest"],
+      "env": {
+        "PLAYWRITER_AUTO_ENABLE": "1"
+      }
+    }
+  },
+  "sampling": {
+    "agentation": {
+      "mode": "auto",
+      "maxTokens": 4096
+    }
+  }
+}
+```
+
+> **참고:** `PLAYWRITER_AUTO_ENABLE=1`은 필요할 때 자동으로 탭을 생성합니다 (수동으로 확장 프로그램 클릭 불필요).
 
 ### 워크플로우 예시
 

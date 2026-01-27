@@ -1089,7 +1089,7 @@
 
         window.agentationWS.onFeedbackResult = (result) => {
           if (result.success && result.response) {
-            showAIResponseModal(result.response);
+            showToast(t("sentToAI"));
           }
         };
 
@@ -1197,17 +1197,13 @@
               ? `${playwrightHint}\n\n${additionalContext}`
               : playwrightHint;
           }
-          const response = await window.agentationWS.submitFeedback(
+          await window.agentationWS.submitFeedback(
             annotations,
             additionalContext,
           );
 
           closeModal();
           showToast(t("sentToAI"));
-
-          if (response) {
-            showAIResponseModal(response);
-          }
 
           if (settings.clearAfterCopy) {
             annotations = [];
@@ -1231,55 +1227,6 @@
         closeModal();
       });
     }
-  }
-
-  function showAIResponseModal(response) {
-    const overlay = document.createElement("div");
-    overlay.className = "agentation-modal-overlay";
-
-    overlay.innerHTML = `
-      <div class="agentation-modal" style="max-width: 600px; max-height: 80vh;">
-        <div class="agentation-modal-header">
-          <h3 class="agentation-modal-title">${t("aiResponse")}</h3>
-        </div>
-        <div style="max-height: 60vh; overflow-y: auto; background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 16px; white-space: pre-wrap; font-family: monospace; font-size: 13px; line-height: 1.5; color: #1e293b;">
-          ${escapeHtml(response)}
-        </div>
-        <div class="agentation-modal-actions">
-          <button class="agentation-btn agentation-btn-cancel" data-action="copy-response" style="background: #dbeafe; color: #2563eb;">${t("copyResponse")}</button>
-          <button class="agentation-btn agentation-btn-add" data-action="close">${t("close")}</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    const closeBtn = overlay.querySelector('[data-action="close"]');
-    const copyResponseBtn = overlay.querySelector(
-      '[data-action="copy-response"]',
-    );
-
-    const closeModal = () => overlay.remove();
-
-    closeBtn.addEventListener("click", closeModal);
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeModal();
-    });
-
-    copyResponseBtn.addEventListener("click", async () => {
-      try {
-        await navigator.clipboard.writeText(response);
-        showToast(t("responseCopied"));
-      } catch (err) {
-        showToast(t("copyFailed"));
-      }
-    });
-  }
-
-  function escapeHtml(text) {
-    const div = document.createElement("div");
-    div.textContent = text;
-    return div.innerHTML;
   }
 
   function showToast(message) {

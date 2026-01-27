@@ -264,7 +264,33 @@ For the best experience, use Agentation together with [Playwriter](https://githu
 
 1. Install [Playwriter Chrome Extension](https://chromewebstore.google.com/detail/playwriter-mcp/jfeammnjpkecdekppnclgkkffahnhfhe)
 2. Click extension icon on a tab (turns green when connected)
-3. Add to your MCP config or use CLI: `npm i -g playwriter`
+3. Add to `~/.config/opencode/agentation.json`:
+
+```json
+{
+  "mcp": {
+    "agentation": {
+      "type": "local",
+      "command": ["node", "AGENTATION_PATH/packages/mcp-server/dist/cli.js"]
+    },
+    "playwriter": {
+      "type": "local",
+      "command": ["npx", "-y", "playwriter@latest"],
+      "env": {
+        "PLAYWRITER_AUTO_ENABLE": "1"
+      }
+    }
+  },
+  "sampling": {
+    "agentation": {
+      "mode": "auto",
+      "maxTokens": 4096
+    }
+  }
+}
+```
+
+> **Note:** `PLAYWRITER_AUTO_ENABLE=1` auto-creates a tab when needed (no manual extension click required).
 
 ### Workflow Example
 

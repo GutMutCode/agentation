@@ -47,10 +47,6 @@
       copyInstead: "Copy to Clipboard",
       group: "Group",
 
-      // AI response
-      aiResponse: "AI Response",
-      copyResponse: "Copy Response",
-
       // Toast messages
       noAnnotations: "No annotations to copy",
       copiedAnnotations: "Copied {count} annotation(s) to clipboard",
@@ -58,7 +54,6 @@
       pleasAddFeedback: "Please add feedback first",
       sentToAI: "Feedback sent to AI",
       sendFailed: "Send failed: ",
-      responseCopied: "Response copied",
       annotationUpdated: "Annotation updated",
 
       // Settings
@@ -128,10 +123,6 @@
       copyInstead: "클립보드에 복사",
       group: "그룹",
 
-      // AI response
-      aiResponse: "AI 응답",
-      copyResponse: "응답 복사",
-
       // Toast messages
       noAnnotations: "복사할 어노테이션이 없습니다",
       copiedAnnotations: "{count}개의 어노테이션을 클립보드에 복사했습니다",
@@ -139,7 +130,6 @@
       pleasAddFeedback: "피드백을 추가해주세요",
       sentToAI: "AI에게 피드백을 전송했습니다",
       sendFailed: "전송 실패: ",
-      responseCopied: "응답이 복사되었습니다",
       annotationUpdated: "어노테이션이 업데이트되었습니다",
 
       // Settings
