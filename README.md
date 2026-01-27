@@ -1,132 +1,128 @@
 # Agentation
 
-AI-powered UI feedback system with MCP sampling support.
+AI-powered UI feedback system. Annotate webpage elements and send feedback directly to OpenCode sessions via MCP sampling.
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                              Architecture                                │
-├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  ┌─────────────┐     WebSocket      ┌─────────────┐     MCP Sampling   │
-│  │   Chrome    │ ◄──────────────► │  Agentation  │ ◄────────────────► │
+│  │   Chrome    │ ◄──────────────►  │  Agentation  │ ◄────────────────► │
 │  │  Extension  │    localhost:19989 │  MCP Server  │                    │
 │  └─────────────┘                    └─────────────┘                    │
 │        │                                   │                            │
 │        │ User annotations                  │ sampling/createMessage     │
 │        ▼                                   ▼                            │
 │  ┌─────────────┐                    ┌─────────────┐                    │
-│  │  Web Page   │                    │  OpenCode   │ ──► LLM            │
+│  │  Web Page   │                    │  OpenCode   │ ──► LLM Session    │
 │  │  (target)   │                    │   (fork)    │                    │
 │  └─────────────┘                    └─────────────┘                    │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| `@agentation/extension` | Chrome extension for UI annotation |
-| `@agentation/mcp-server` | MCP server with WebSocket + sampling |
-| `@agentation/shared` | Shared types and constants |
+**Flow:**
+1. User annotates UI elements in Chrome extension
+2. Click "AI에게 지시하기" → WebSocket → MCP Server
+3. MCP Server sends sampling request to OpenCode
+4. OpenCode creates/reuses session and starts LLM conversation
+5. User continues conversation in OpenCode TUI
 
 ## Quick Start
 
-### 1. Install dependencies
+### 1. Clone with submodule
 
 ```bash
+git clone --recursive https://github.com/GutMutCode/agentation.git
+cd agentation
+```
+
+### 2. Install & Build
+
+```bash
+# Install dependencies
 pnpm install
-```
 
-### 2. Build packages
-
-```bash
+# Build agentation packages
 pnpm build
+
+# Build OpenCode fork
+cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
 
-### 3. Load Chrome Extension
+### 3. Configure OpenCode
 
-1. Open Chrome and go to `chrome://extensions/`
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select `packages/extension` directory
+Add to `~/.config/opencode/opencode.json`:
 
-### 4. Start MCP Server
-
-```bash
-# Add to your MCP client config (e.g., opencode.json)
+```json
 {
   "mcp": {
     "agentation": {
       "type": "local",
       "command": ["node", "/path/to/agentation/packages/mcp-server/dist/cli.js"]
     }
+  },
+  "sampling": {
+    "agentation": {
+      "mode": "prompt",
+      "maxTokens": 4096
+    }
   }
 }
+```
+
+**Sampling modes:**
+- `"prompt"` - Ask for approval each time (recommended)
+- `"auto"` - Auto-approve all requests
+- `"deny"` - Block all requests
+
+### 4. Load Chrome Extension
+
+1. Open `chrome://extensions/`
+2. Enable "Developer mode"
+3. Click "Load unpacked"
+4. Select `packages/extension` directory
+
+### 5. Run OpenCode (fork version)
+
+```bash
+./external/opencode/packages/opencode/dist/opencode-darwin-arm64/bin/opencode
 ```
 
 ## Usage
 
-1. Click the Agentation toolbar on any webpage
-2. Activate annotation mode (toggle button)
-3. Click on elements to add feedback
-4. Click "AI에게 지시하기" to send feedback to AI
+1. Open any webpage
+2. Click Agentation toolbar (bottom-right)
+3. Toggle annotation mode
+4. Click elements to add feedback
+5. Click "AI에게 지시하기"
+6. Approve in OpenCode TUI → conversation continues in session
 
-## Phase 2: OpenCode Sampling Support
+## Packages
 
-To enable full sampling support, OpenCode needs to be forked and modified:
-
-### Required Changes
-
-1. **Add sampling capability** in MCP client initialization:
-```typescript
-// packages/opencode/src/mcp/client.ts
-{
-  capabilities: {
-    sampling: {}
-  }
-}
-```
-
-2. **Implement sampling handler**:
-```typescript
-// Handle sampling/createMessage requests from MCP servers
-server.setRequestHandler('sampling/createMessage', async (request) => {
-  // Check trust level
-  // Show approval UI if needed
-  // Call LLM with the request
-  // Return response
-});
-```
-
-3. **Add trust level configuration** in config schema:
-```typescript
-// packages/opencode/src/config/config.ts
-sampling: {
-  trustLevels: {
-    "agentation": { mode: "auto", maxTokens: 4096 },
-    "*": { mode: "prompt" }
-  }
-}
-```
-
-4. **Add TUI approval dialog** for sampling requests
-
-See `docs/opencode-sampling-guide.md` for detailed implementation guide.
+| Package | Description |
+|---------|-------------|
+| `packages/extension` | Chrome extension for UI annotation |
+| `packages/mcp-server` | MCP server with WebSocket + sampling |
+| `packages/shared` | Shared types |
+| `external/opencode` | OpenCode fork (submodule) with MCP sampling support |
 
 ## Development
 
 ```bash
-# Watch mode for all packages
+# Watch mode
 pnpm dev
 
 # Type check
 pnpm typecheck
 
-# Lint
-pnpm lint
+# Update OpenCode submodule
+cd external/opencode
+git pull origin dev
+cd ../..
+git add external/opencode
+git commit -m "chore: update opencode submodule"
 ```
 
 ## License
