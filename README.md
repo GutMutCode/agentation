@@ -1,5 +1,7 @@
 # Agentation
 
+[한국어](README.ko.md)
+
 AI-powered UI feedback system. Annotate webpage elements and send feedback directly to OpenCode sessions via MCP sampling.
 
 > **Inspired by [benjitaylor/agentation](https://github.com/benjitaylor/agentation)** — the original visual feedback tool for AI agents.
