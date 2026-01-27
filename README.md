@@ -29,7 +29,7 @@ AI-powered UI feedback system. Annotate webpage elements and send feedback direc
 - **bun** (`curl -fsSL https://bun.sh/install | bash`)
 - **Chrome** browser
 
-> **Note:** Windows is not tested. macOS and Linux are supported.
+> **Note:** Windows support is experimental. macOS and Linux are fully supported.
 
 ## Quick Start
 
@@ -58,11 +58,15 @@ Download from [OpenCode Fork Releases](https://github.com/GutMutCode/opencode/re
 | macOS Apple Silicon | `opencode-darwin-arm64.tar.gz` |
 | Linux x64 | `opencode-linux-x64.tar.gz` |
 | Linux ARM64 | `opencode-linux-arm64.tar.gz` |
+| Windows x64 | `opencode-windows-x64.zip` |
 
 ```bash
 # Example for macOS Apple Silicon
 tar -xzf opencode-darwin-arm64.tar.gz
 mv opencode-darwin-arm64 external/opencode/packages/opencode/dist/
+
+# Example for Windows (PowerShell)
+Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode/packages/opencode/dist/
 ```
 
 > **Note:** macOS Intel users must build from source (Option B).
@@ -119,11 +123,14 @@ cd external/opencode/packages/opencode
 
 # macOS
 ./dist/opencode-darwin-arm64/bin/opencode    # Apple Silicon (M1/M2)
-./dist/opencode-darwin-x64/bin/opencode      # Intel
+./dist/opencode-darwin-x64/bin/opencode      # Intel (build from source)
 
 # Linux
 ./dist/opencode-linux-arm64/bin/opencode     # ARM
 ./dist/opencode-linux-x64/bin/opencode       # x64
+
+# Windows (PowerShell)
+.\dist\opencode-windows-x64\bin\opencode.exe
 ```
 
 ## Usage
