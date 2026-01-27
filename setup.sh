@@ -312,7 +312,7 @@ configure_opencode() {
   },
   "sampling": {
     "agentation": {
-      "mode": "prompt",
+      "mode": "auto",
       "maxTokens": 4096
     }
   }
@@ -334,7 +334,7 @@ EOF
   },
   "sampling": {
     "agentation": {
-      "mode": "prompt",
+      "mode": "auto",
       "maxTokens": 4096
     }
   }

@@ -142,7 +142,7 @@ Create or edit `~/.config/opencode/opencode.json`:
   },
   "sampling": {
     "agentation": {
-      "mode": "prompt",
+      "mode": "auto",
       "maxTokens": 4096
     }
   }
@@ -157,9 +157,11 @@ pwd  # Example output: /Users/yourname/agentation
 **Sampling modes:**
 | Mode | Behavior |
 |------|----------|
-| `prompt` | Ask for approval each time (recommended) |
-| `auto` | Auto-approve all requests |
+| `auto` | Auto-approve all requests (default) |
+| `prompt` | Ask for approval each time |
 | `deny` | Block all requests |
+
+> **Security Note:** If you want manual approval for each AI request, change `"mode": "auto"` to `"mode": "prompt"` in your `opencode.json`. This shows an Allow/Deny dialog before processing each feedback.
 
 #### 5. Load Chrome Extension
 
