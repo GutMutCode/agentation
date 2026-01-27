@@ -33,21 +33,54 @@ AI-powered UI feedback system. Annotate webpage elements and send feedback direc
 
 ## Quick Start
 
-### 1. Clone
+### Automated Setup (Recommended)
+
+```bash
+git clone --recursive https://github.com/GutMutCode/agentation.git
+cd agentation
+./setup.sh
+```
+
+The script will:
+- Check dependencies (node, pnpm)
+- Build agentation packages
+- Download OpenCode binary for your platform
+- Configure `~/.config/opencode/opencode.json`
+
+**Options:**
+```bash
+./setup.sh              # Download pre-built binary (default)
+./setup.sh --source     # Build OpenCode from source (requires bun)
+./setup.sh --skip-build # Skip agentation build
+```
+
+After setup, manually load the Chrome extension (security restriction):
+1. Open `chrome://extensions/`
+2. Enable **Developer mode** (top right)
+3. Click **Load unpacked** → select `packages/extension`
+
+---
+
+### Manual Setup
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+#### 1. Clone
 
 ```bash
 git clone --recursive https://github.com/GutMutCode/agentation.git
 cd agentation
 ```
 
-### 2. Build Agentation
+#### 2. Build Agentation
 
 ```bash
 pnpm install
 pnpm build
 ```
 
-### 3. Install OpenCode Fork
+#### 3. Install OpenCode Fork
 
 **Option A: Download pre-built binary**
 
@@ -76,7 +109,7 @@ Expand-Archive -Path opencode-windows-x64.zip -DestinationPath external/opencode
 cd external/opencode/packages/opencode && bun run build && cd ../../../..
 ```
 
-### 4. Configure OpenCode
+#### 4. Configure OpenCode
 
 Create or edit `~/.config/opencode/opencode.json`:
 
@@ -109,14 +142,16 @@ pwd  # Example output: /Users/yourname/agentation
 | `auto` | Auto-approve all requests |
 | `deny` | Block all requests |
 
-### 5. Load Chrome Extension
+#### 5. Load Chrome Extension
 
 1. Open `chrome://extensions/`
 2. Enable **Developer mode** (top right toggle)
 3. Click **Load unpacked**
 4. Select `packages/extension` folder
 
-### 6. Start OpenCode
+</details>
+
+### Start OpenCode
 
 ```bash
 cd external/opencode/packages/opencode
