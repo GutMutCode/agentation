@@ -24,7 +24,8 @@
       groupAnnotation: "Group Annotation",
       elements: "elements",
       annotationPlaceholder: "Describe the issue or change you want...",
-      groupAnnotationPlaceholder: "Describe the issue or change for these elements...",
+      groupAnnotationPlaceholder:
+        "Describe the issue or change for these elements...",
       cancel: "Cancel",
       add: "Add",
       addGroupAnnotation: "Add Group Annotation",
@@ -63,10 +64,11 @@
       standard: "Standard",
       detailed: "Detailed",
       markerColor: "Marker Color",
-      clearAfterCopy: "Clear after copy",
+      clearAfterCopy: "Clear after copy/send",
       blockInteractions: "Block page interactions",
       includePlaywrightHint: "Include Playwriter hint",
-      playwrightHintPrompt: "[System] You can use Playwriter (NOT Playwright - it's a different tool) to verify the user's current browser session state. The page URL is provided above.",
+      playwrightHintPrompt:
+        "[System] You can use Playwriter (NOT Playwright - it's a different tool) to verify the user's current browser session state. The page URL is provided above.",
 
       // Misc
       moreElements: "+{count} more elements",
@@ -100,7 +102,8 @@
       groupAnnotation: "그룹 어노테이션",
       elements: "개 요소",
       annotationPlaceholder: "문제점이나 변경사항을 설명해주세요...",
-      groupAnnotationPlaceholder: "이 요소들에 대한 문제점이나 변경사항을 설명해주세요...",
+      groupAnnotationPlaceholder:
+        "이 요소들에 대한 문제점이나 변경사항을 설명해주세요...",
       cancel: "취소",
       add: "추가",
       addGroupAnnotation: "그룹 어노테이션 추가",
@@ -139,10 +142,11 @@
       standard: "표준",
       detailed: "상세",
       markerColor: "마커 색상",
-      clearAfterCopy: "복사 후 삭제",
+      clearAfterCopy: "복사/전송 후 삭제",
       blockInteractions: "페이지 상호작용 차단",
       includePlaywrightHint: "Playwriter 힌트 포함",
-      playwrightHintPrompt: "[System] Playwriter(Playwright가 아닌 별도의 도구)를 사용하여 사용자의 현재 브라우저 세션 상태를 확인할 수 있습니다. 페이지 URL은 위에 제공되어 있습니다.",
+      playwrightHintPrompt:
+        "[System] Playwriter(Playwright가 아닌 별도의 도구)를 사용하여 사용자의 현재 브라우저 세션 상태를 확인할 수 있습니다. 페이지 URL은 위에 제공되어 있습니다.",
 
       // Misc
       moreElements: "+{count}개 더",

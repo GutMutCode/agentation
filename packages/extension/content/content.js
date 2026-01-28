@@ -1205,6 +1205,21 @@
           closeModal();
           showToast(t("sentToAI"));
 
+          // Deactivate annotation mode for Playwriter to work properly
+          if (isActive) {
+            isActive = false;
+            chrome.runtime.sendMessage({ type: "SET_STATE", isActive: false });
+            updateToolbarButtons();
+            if (hoveredElement) {
+              hoveredElement.classList.remove("agentation-highlight");
+              hoveredElement = null;
+              hideLabel();
+            }
+            if (settings.blockInteractions) {
+              document.body.classList.remove("agentation-block-interactions");
+            }
+          }
+
           if (settings.clearAfterCopy) {
             annotations = [];
             saveAnnotations();
