@@ -29,6 +29,8 @@
       cancel: "Cancel",
       add: "Add",
       addGroupAnnotation: "Add Group Annotation",
+      directSendToAI: "Send to AI",
+      directSendPlaceholder: "Enter instructions for AI...",
 
       // Annotation detail
       annotation: "Annotation",
@@ -107,6 +109,8 @@
       cancel: "취소",
       add: "추가",
       addGroupAnnotation: "그룹 어노테이션 추가",
+      directSendToAI: "AI에게 전송",
+      directSendPlaceholder: "AI에게 전달할 내용을 입력하세요...",
 
       // Annotation detail
       annotation: "어노테이션",

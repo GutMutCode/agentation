@@ -532,10 +532,11 @@
     popover.innerHTML = `
       <div class="agentation-popover-arrow"></div>
       <div class="agentation-modal-selector">${selector}</div>
-      <textarea class="agentation-modal-textarea" placeholder="${t("annotationPlaceholder")}" autofocus></textarea>
+      <textarea class="agentation-modal-textarea" placeholder="${t("directSendPlaceholder")}" autofocus></textarea>
       <div class="agentation-modal-actions">
         <button class="agentation-btn agentation-btn-cancel">${t("cancel")}</button>
         <button class="agentation-btn agentation-btn-add">${t("add")}</button>
+        <button class="agentation-btn agentation-btn-ai" style="background: #8b5cf6; color: white;">${t("directSendToAI")}</button>
       </div>
     `;
 
@@ -590,6 +591,7 @@
     const textarea = popover.querySelector(".agentation-modal-textarea");
     const cancelBtn = popover.querySelector(".agentation-btn-cancel");
     const addBtn = popover.querySelector(".agentation-btn-add");
+    const aiBtn = popover.querySelector(".agentation-btn-ai");
 
     setTimeout(() => textarea.focus(), 10);
 
@@ -641,6 +643,80 @@
     };
 
     addBtn.addEventListener("click", addAnnotation);
+
+    aiBtn.addEventListener("click", async () => {
+      const feedback = textarea.value.trim();
+      if (!feedback) {
+        textarea.focus();
+        return;
+      }
+
+      aiBtn.disabled = true;
+      aiBtn.textContent = t("sending");
+
+      if (!mcpConnected && window.agentationWS) {
+        try {
+          await connectToMCP();
+        } catch (error) {
+          showToast(t("mcpConnectionFailed"));
+          aiBtn.disabled = false;
+          aiBtn.textContent = t("directSendToAI");
+          return;
+        }
+      }
+
+      if (!mcpConnected) {
+        showToast(t("mcpDisconnected"));
+        aiBtn.disabled = false;
+        aiBtn.textContent = t("directSendToAI");
+        return;
+      }
+
+      try {
+        const tempAnnotation = [
+          {
+            id: Date.now(),
+            selector,
+            description: getElementDescription(element),
+            feedback,
+            position: {
+              top: rect.top + window.scrollY,
+              left: rect.left + window.scrollX,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        ];
+
+        let context = "";
+        if (settings.includePlaywrightHint) {
+          context = t("playwrightHintPrompt");
+        }
+
+        await window.agentationWS.submitFeedback(tempAnnotation, context);
+
+        closeModal();
+        showToast(t("sentToAI"));
+
+        if (isActive) {
+          isActive = false;
+          chrome.runtime.sendMessage({ type: "SET_STATE", isActive: false });
+          updateToolbarButtons();
+          if (hoveredElement) {
+            hoveredElement.classList.remove("agentation-highlight");
+            hoveredElement = null;
+            hideLabel();
+          }
+          if (settings.blockInteractions) {
+            document.body.classList.remove("agentation-block-interactions");
+          }
+        }
+      } catch (error) {
+        showToast(t("sendFailed") + error.message);
+        aiBtn.disabled = false;
+        aiBtn.textContent = t("directSendToAI");
+      }
+    });
+
     textarea.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         addAnnotation();
@@ -1087,11 +1163,7 @@
           updateMCPStatus(status.connected);
         };
 
-        window.agentationWS.onFeedbackResult = (result) => {
-          if (result.success && result.response) {
-            showToast(t("sentToAI"));
-          }
-        };
+        window.agentationWS.onFeedbackResult = null;
 
         await window.agentationWS.connect(undefined, silent);
         updateMCPStatus(true);
