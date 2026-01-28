@@ -255,6 +255,56 @@ Only one Agentation session can run at a time (port 19989 is shared). If you try
 
 Then manually remove Chrome extension: `chrome://extensions/` → Find Agentation → Remove
 
+## Claude Code Support
+
+Agentation also supports [Claude Code](https://code.claude.com/) (Anthropic's official CLI). However, Claude Code does not currently support MCP sampling API, so the workflow differs slightly.
+
+### Feature Comparison
+
+| Feature                   | OpenCode          | Claude Code |
+| ------------------------- | ----------------- | ----------- |
+| MCP Tools                 | ✅                | ✅          |
+| Automatic "Send to AI"    | ✅ (via sampling) | ❌          |
+| Manual feedback retrieval | ✅                | ✅          |
+| Copy to Clipboard         | ✅                | ✅          |
+
+### Setup for Claude Code
+
+1. Add Agentation MCP server to your project's `.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "agentation": {
+      "command": "node",
+      "args": ["AGENTATION_PATH/packages/mcp-server/dist/cli.js"]
+    }
+  }
+}
+```
+
+**Replace `AGENTATION_PATH`** with your actual Agentation installation path.
+
+Or add via CLI:
+
+```bash
+claude mcp add --transport stdio agentation -- node AGENTATION_PATH/packages/mcp-server/dist/cli.js
+```
+
+### Workflow with Claude Code
+
+Since Claude Code doesn't support MCP sampling, use this workflow:
+
+1. **Annotate elements** on a web page using the extension
+2. **Submit feedback** (click "Send to AI")
+3. **In Claude Code**, call the `get-pending-feedback` tool:
+   ```
+   > Use the get-pending-feedback tool to check for UI feedback
+   ```
+4. Claude will receive the feedback and can help implement the changes
+
+> **Note:** The extension will show "Feedback queued" instead of an AI response. This is expected behavior with Claude Code.
+
 ## Recommended: Use with Playwriter
 
 For the best experience, use Agentation together with [Playwriter](https://github.com/remorses/playwriter) — a browser automation MCP that controls your existing Chrome.

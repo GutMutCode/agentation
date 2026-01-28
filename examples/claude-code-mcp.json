@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "agentation": {
+      "command": "node",
+      "args": ["AGENTATION_PATH/packages/mcp-server/dist/cli.js"]
+    }
+  }
+}

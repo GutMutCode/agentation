@@ -255,6 +255,56 @@ agentation
 
 Chrome Extension은 수동 제거: `chrome://extensions/` → Agentation 찾기 → 삭제
 
+## Claude Code 지원
+
+Agentation은 [Claude Code](https://code.claude.com/) (Anthropic 공식 CLI)도 지원합니다. 단, Claude Code는 현재 MCP 샘플링 API를 지원하지 않아 워크플로우가 약간 다릅니다.
+
+### 기능 비교
+
+| 기능               | OpenCode    | Claude Code |
+| ------------------ | ----------- | ----------- |
+| MCP Tools          | ✅          | ✅          |
+| 자동 "AI에게 전송" | ✅ (샘플링) | ❌          |
+| 수동 피드백 조회   | ✅          | ✅          |
+| 클립보드에 복사    | ✅          | ✅          |
+
+### Claude Code 설정
+
+1. 프로젝트의 `.mcp.json`에 Agentation MCP 서버 추가:
+
+```json
+{
+  "mcpServers": {
+    "agentation": {
+      "command": "node",
+      "args": ["AGENTATION_PATH/packages/mcp-server/dist/cli.js"]
+    }
+  }
+}
+```
+
+**`AGENTATION_PATH`를 실제 Agentation 설치 경로로 교체하세요.**
+
+또는 CLI로 추가:
+
+```bash
+claude mcp add --transport stdio agentation -- node AGENTATION_PATH/packages/mcp-server/dist/cli.js
+```
+
+### Claude Code 워크플로우
+
+Claude Code는 MCP 샘플링을 지원하지 않으므로 다음 워크플로우를 사용하세요:
+
+1. Extension으로 웹 페이지의 **요소 어노테이션**
+2. **피드백 제출** ("AI에게 전송" 클릭)
+3. **Claude Code에서** `get-pending-feedback` 도구 호출:
+   ```
+   > get-pending-feedback 도구로 UI 피드백 확인
+   ```
+4. Claude가 피드백을 받아 변경 사항 구현을 도와줍니다
+
+> **참고:** Extension에서 AI 응답 대신 "피드백이 대기열에 추가됨" 메시지가 표시됩니다. Claude Code에서는 정상적인 동작입니다.
+
 ## 권장: Playwriter와 함께 사용
 
 최상의 경험을 위해 [Playwriter](https://github.com/remorses/playwriter)와 함께 사용하세요 — 기존 Chrome을 제어하는 브라우저 자동화 MCP입니다.
