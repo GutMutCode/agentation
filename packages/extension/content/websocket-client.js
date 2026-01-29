@@ -3,10 +3,10 @@
  * Handles bidirectional communication between the extension and MCP server
  */
 
-(function() {
-  'use strict';
+(function () {
+  "use strict";
 
-  const DEFAULT_SERVER_URL = 'ws://localhost:19989';
+  const DEFAULT_SERVER_URL = "ws://localhost:19989";
   const RECONNECT_DELAY = 3000;
   const MAX_RECONNECT_ATTEMPTS = 3;
 
@@ -32,7 +32,7 @@
      */
     connect(url = DEFAULT_SERVER_URL, silent = false) {
       this.silent = silent;
-      
+
       return new Promise((resolve, reject) => {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           resolve();
@@ -45,46 +45,61 @@
           this.ws = new WebSocket(url);
 
           this.ws.onopen = () => {
-            console.log('[Agentation] Connected to MCP server');
+            console.log("[Agentation] Connected to MCP server");
             this.connected = true;
             this.hasEverConnected = true;
             this.reconnectAttempts = 0;
-            
+
             this.sendConnect();
-            
+
             if (this.onStatusChange) {
               this.onStatusChange({ connected: true });
             }
-            
+
             resolve();
           };
 
           this.ws.onclose = (event) => {
             this.connected = false;
-            
+
             if (this.onStatusChange) {
               this.onStatusChange({ connected: false });
             }
 
             // Only auto-reconnect if we were previously connected
-            if (this.autoReconnect && this.hasEverConnected && event.code !== 1000 && this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            if (
+              this.autoReconnect &&
+              this.hasEverConnected &&
+              event.code !== 1000 &&
+              this.reconnectAttempts < MAX_RECONNECT_ATTEMPTS
+            ) {
               this.reconnectAttempts++;
-              console.log(`[Agentation] Reconnecting in ${RECONNECT_DELAY / 1000}s...`);
-              setTimeout(() => this.connect(this.serverUrl, true), RECONNECT_DELAY);
+              console.log(
+                `[Agentation] Reconnecting in ${RECONNECT_DELAY / 1000}s...`,
+              );
+              setTimeout(
+                () => this.connect(this.serverUrl, true),
+                RECONNECT_DELAY,
+              );
             }
           };
 
           this.ws.onerror = () => {
-            if (!this.silent && !this.hasEverConnected && this.reconnectAttempts === 0) {
-              console.log('[Agentation] MCP server not available. Copy to Clipboard still works.');
+            if (
+              !this.silent &&
+              !this.hasEverConnected &&
+              this.reconnectAttempts === 0
+            ) {
+              console.log(
+                "[Agentation] MCP server not available. Copy to Clipboard still works.",
+              );
             }
-            reject(new Error('Connection failed'));
+            reject(new Error("Connection failed"));
           };
 
           this.ws.onmessage = (event) => {
             this.handleMessage(event.data);
           };
-
         } catch (error) {
           reject(error);
         }
@@ -96,18 +111,18 @@
      */
     disconnect() {
       this.autoReconnect = false;
-      
+
       if (this.ws) {
         // Send disconnect message before closing
         this.send({
-          type: 'disconnect',
+          type: "disconnect",
           timestamp: new Date().toISOString(),
         });
-        
-        this.ws.close(1000, 'Client requested disconnect');
+
+        this.ws.close(1000, "Client requested disconnect");
         this.ws = null;
       }
-      
+
       this.connected = false;
     }
 
@@ -123,7 +138,7 @@
      */
     send(message) {
       if (!this.isConnected()) {
-        console.warn('[WS Client] Not connected, cannot send message');
+        console.warn("[WS Client] Not connected, cannot send message");
         return false;
       }
 
@@ -131,7 +146,7 @@
         this.ws.send(JSON.stringify(message));
         return true;
       } catch (error) {
-        console.error('[WS Client] Failed to send message:', error);
+        console.error("[WS Client] Failed to send message:", error);
         return false;
       }
     }
@@ -141,7 +156,7 @@
      */
     sendConnect() {
       this.send({
-        type: 'connect',
+        type: "connect",
         payload: {
           pageUrl: window.location.href,
           pageTitle: document.title,
@@ -154,10 +169,10 @@
      * Submit feedback to the MCP server
      * Returns a promise that resolves with the AI response
      */
-    submitFeedback(annotations, additionalContext = '') {
+    submitFeedback(annotations, additionalContext = "") {
       return new Promise((resolve, reject) => {
         if (!this.isConnected()) {
-          reject(new Error('Not connected to MCP server'));
+          reject(new Error("Not connected to MCP server"));
           return;
         }
 
@@ -170,18 +185,36 @@
         setTimeout(() => {
           if (this.pendingRequests.has(requestId)) {
             this.pendingRequests.delete(requestId);
-            reject(new Error('Request timeout'));
+            reject(new Error("Request timeout"));
           }
         }, 120000); // 2 minute timeout for AI processing
 
+        // Transform designTerms IDs to full prompts before sending
+        const processedAnnotations = annotations.map((annotation) => {
+          if (
+            annotation.designTerms &&
+            annotation.designTerms.length > 0 &&
+            window.agentationDesignTerms
+          ) {
+            return {
+              ...annotation,
+              designTerms: annotation.designTerms.map((termId) => {
+                const term = window.agentationDesignTerms.getById(termId);
+                return term ? term.prompt : termId;
+              }),
+            };
+          }
+          return annotation;
+        });
+
         // Send the feedback
         const success = this.send({
-          type: 'submit-feedback',
+          type: "submit-feedback",
           id: requestId,
           payload: {
             pageUrl: window.location.href,
             pageTitle: document.title,
-            annotations,
+            annotations: processedAnnotations,
             additionalContext,
           },
           timestamp: new Date().toISOString(),
@@ -189,7 +222,7 @@
 
         if (!success) {
           this.pendingRequests.delete(requestId);
-          reject(new Error('Failed to send feedback'));
+          reject(new Error("Failed to send feedback"));
         }
       });
     }
@@ -199,7 +232,7 @@
      */
     requestStatus() {
       this.send({
-        type: 'status',
+        type: "status",
         timestamp: new Date().toISOString(),
       });
     }
@@ -210,21 +243,21 @@
     handleMessage(data) {
       try {
         const message = JSON.parse(data);
-        console.log('[WS Client] Received:', message.type);
+        console.log("[WS Client] Received:", message.type);
 
         switch (message.type) {
-          case 'status':
+          case "status":
             if (this.onStatusChange) {
               this.onStatusChange(message.payload);
             }
             break;
 
-          case 'feedback-result':
+          case "feedback-result":
             this.handleFeedbackResult(message);
             break;
 
-          case 'error':
-            console.error('[WS Client] Server error:', message.payload);
+          case "error":
+            console.error("[WS Client] Server error:", message.payload);
             this.handleError(message);
             break;
 
@@ -236,7 +269,7 @@
             }
         }
       } catch (error) {
-        console.error('[WS Client] Failed to parse message:', error);
+        console.error("[WS Client] Failed to parse message:", error);
       }
     }
 
@@ -244,16 +277,23 @@
      * Handle feedback result
      */
     handleFeedbackResult(message) {
-      const { requestId, success, message: errorMessage, response } = message.payload;
+      const {
+        requestId,
+        success,
+        message: errorMessage,
+        response,
+      } = message.payload;
 
       const pending = this.pendingRequests.get(requestId);
       if (pending) {
         this.pendingRequests.delete(requestId);
-        
+
         if (success) {
           pending.resolve(response);
         } else {
-          pending.reject(new Error(errorMessage || 'Feedback processing failed'));
+          pending.reject(
+            new Error(errorMessage || "Feedback processing failed"),
+          );
         }
       }
 
@@ -270,7 +310,7 @@
       const { code } = message.payload;
 
       // Reject all pending requests on certain errors
-      if (code === 'CONNECTION_FAILED' || code === 'SERVER_ERROR') {
+      if (code === "CONNECTION_FAILED" || code === "SERVER_ERROR") {
         for (const [id, pending] of this.pendingRequests) {
           pending.reject(new Error(message.payload.message));
         }

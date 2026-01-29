@@ -172,14 +172,24 @@
   function onMouseOver(e) {
     if (!isActive) return;
 
+    if (
+      document.querySelector(".agentation-popover") ||
+      document.querySelector(".agentation-popover-overlay") ||
+      document.querySelector(".agentation-modal-overlay")
+    ) {
+      return;
+    }
+
     const target = e.target;
     if (
       target.closest(".agentation-toolbar") ||
       target.closest(".agentation-modal-overlay") ||
+      target.closest(".agentation-popover-overlay") ||
       target.closest(".agentation-popover") ||
       target.closest(".agentation-marker") ||
+      target.closest(".agentation-group-marker") ||
       target.closest(".agentation-settings-panel") ||
-      target.classList.contains("agentation-label")
+      target.closest(".agentation-design-terms-panel")
     ) {
       return;
     }
@@ -206,6 +216,14 @@
   function onMouseMove(e) {
     if (!isActive) return;
 
+    if (
+      document.querySelector(".agentation-popover") ||
+      document.querySelector(".agentation-popover-overlay") ||
+      document.querySelector(".agentation-modal-overlay")
+    ) {
+      return;
+    }
+
     if (isDragging && selectionBox) {
       updateSelectionBox(e.clientX, e.clientY);
       updateSelectedElements();
@@ -231,14 +249,24 @@
   function onMouseDown(e) {
     if (!isActive) return;
 
+    if (
+      document.querySelector(".agentation-popover") ||
+      document.querySelector(".agentation-popover-overlay") ||
+      document.querySelector(".agentation-modal-overlay")
+    ) {
+      return;
+    }
+
     const target = e.target;
     if (
       target.closest(".agentation-toolbar") ||
       target.closest(".agentation-modal-overlay") ||
+      target.closest(".agentation-popover-overlay") ||
       target.closest(".agentation-popover") ||
       target.closest(".agentation-marker") ||
       target.closest(".agentation-group-marker") ||
-      target.closest(".agentation-settings-panel")
+      target.closest(".agentation-settings-panel") ||
+      target.closest(".agentation-design-terms-panel")
     ) {
       return;
     }
@@ -248,6 +276,15 @@
 
   function onMouseUp(e) {
     if (!isActive) return;
+
+    if (
+      document.querySelector(".agentation-popover") ||
+      document.querySelector(".agentation-popover-overlay") ||
+      document.querySelector(".agentation-modal-overlay")
+    ) {
+      cleanupDragSelection();
+      return;
+    }
 
     if (isDragging && selectedElements.length > 0) {
       e.preventDefault();
@@ -397,6 +434,7 @@
           ${selectorListHtml}
           ${moreCount}
         </div>
+        ${createDesignTermsHTML()}
         <textarea class="agentation-modal-textarea" placeholder="${t("groupAnnotationPlaceholder")}" autofocus></textarea>
         <div class="agentation-modal-actions">
           <button class="agentation-btn agentation-btn-cancel">${t("cancel")}</button>
@@ -408,6 +446,10 @@
 
     document.body.appendChild(overlay);
 
+    const designTermsUI = initializeDesignTermsUI(
+      overlay.querySelector(".agentation-design-terms-container"),
+    );
+
     const textarea = overlay.querySelector(".agentation-modal-textarea");
     const cancelBtn = overlay.querySelector(".agentation-btn-cancel");
     const addBtn = overlay.querySelector(".agentation-btn-add");
@@ -416,12 +458,24 @@
     setTimeout(() => textarea.focus(), 10);
 
     const closeModal = () => {
+      if (
+        overlay.querySelector(".agentation-design-terms-container")?.cleanup
+      ) {
+        overlay.querySelector(".agentation-design-terms-container").cleanup();
+      }
       overlay.remove();
     };
 
     cancelBtn.addEventListener("click", closeModal);
     overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeModal();
+      if (
+        e.target === overlay &&
+        !e.target.closest(".agentation-term-item") &&
+        !e.target.closest(".agentation-term-chip") &&
+        !e.target.closest(".agentation-term-category-tab")
+      ) {
+        closeModal();
+      }
     });
 
     const addGroupAnnotation = () => {
@@ -437,6 +491,7 @@
         selectors,
         descriptions,
         feedback,
+        designTerms: designTermsUI.getSelectedTerms(),
         position: {
           top: boundingBox.top + window.scrollY,
           left: boundingBox.left + window.scrollX,
@@ -495,6 +550,7 @@
             selectors,
             descriptions,
             feedback,
+            designTerms: designTermsUI.getSelectedTerms(),
             position: {
               top: boundingBox.top + window.scrollY,
               left: boundingBox.left + window.scrollX,
@@ -571,6 +627,317 @@
     };
   }
 
+  function createDesignTermsHTML() {
+    return `
+      <div class="agentation-design-terms-container">
+        <button class="agentation-btn-term">
+          <span>+</span> ${t("addDesignTerm")}
+        </button>
+        <div class="agentation-design-terms-selected"></div>
+      </div>
+    `;
+  }
+
+  function initializeDesignTermsUI(container, initialTerms = [], onChange) {
+    const btn = container.querySelector(".agentation-btn-term");
+    const selectedContainer = container.querySelector(
+      ".agentation-design-terms-selected",
+    );
+
+    let selectedTermIds = [...initialTerms];
+    let currentCategory = window.agentationDesignTerms.categories[0].id;
+    let panelElement = null;
+    let previewElement = null;
+    let hidePreviewTimeout = null;
+
+    const createPanel = () => {
+      const popover =
+        container.closest(".agentation-popover") ||
+        container.closest(".agentation-modal");
+      if (!popover) return;
+
+      const panel = document.createElement("div");
+      panel.className = "agentation-design-terms-panel";
+
+      panel.innerHTML = `
+        <div class="agentation-term-category-tabs"></div>
+        <div class="agentation-term-list"></div>
+      `;
+
+      document.body.appendChild(panel);
+      panelElement = panel;
+
+      panel.addEventListener("mousedown", (e) => e.stopPropagation());
+      panel.addEventListener("click", (e) => e.stopPropagation());
+
+      updatePanelPosition();
+      renderTabs();
+      renderList();
+
+      window.addEventListener("scroll", updatePanelPosition, { passive: true });
+      window.addEventListener("resize", updatePanelPosition, { passive: true });
+    };
+
+    const updatePanelPosition = () => {
+      if (!panelElement) return;
+
+      const popover =
+        container.closest(".agentation-popover") ||
+        container.closest(".agentation-modal");
+      if (!popover) return;
+
+      const popoverRect = popover.getBoundingClientRect();
+      const panelRect = panelElement.getBoundingClientRect();
+      const gap = 8;
+      const viewportPadding = 20;
+
+      let left = popoverRect.right + gap;
+      let top = popoverRect.top;
+
+      if (left + panelRect.width > window.innerWidth - viewportPadding) {
+        left = popoverRect.left - panelRect.width - gap;
+
+        if (left < viewportPadding) {
+          left = window.innerWidth - panelRect.width - viewportPadding;
+        }
+      }
+
+      if (top + panelRect.height > window.innerHeight - viewportPadding) {
+        top = window.innerHeight - panelRect.height - viewportPadding;
+      }
+
+      if (top < viewportPadding) {
+        top = viewportPadding;
+      }
+
+      panelElement.style.left = `${left}px`;
+      panelElement.style.top = `${top}px`;
+    };
+
+    const showPreview = (term, itemElement) => {
+      if (!term.previewHtml) return;
+
+      if (hidePreviewTimeout) {
+        clearTimeout(hidePreviewTimeout);
+        hidePreviewTimeout = null;
+      }
+
+      if (previewElement) {
+        previewElement.remove();
+      }
+
+      const preview = document.createElement("div");
+      preview.className = "agentation-term-preview";
+      preview.innerHTML = `<div class="agentation-term-preview-content">${term.previewHtml}</div>`;
+      document.body.appendChild(preview);
+      previewElement = preview;
+
+      const itemRect = itemElement.getBoundingClientRect();
+      const previewRect = preview.getBoundingClientRect();
+      const gap = 8;
+      const viewportPadding = 10;
+
+      let left = itemRect.right + gap;
+      let top = itemRect.top + itemRect.height / 2 - previewRect.height / 2;
+
+      if (left + previewRect.width > window.innerWidth - viewportPadding) {
+        left = itemRect.left - previewRect.width - gap;
+      }
+
+      if (left < viewportPadding) {
+        left = viewportPadding;
+      }
+
+      if (top + previewRect.height > window.innerHeight - viewportPadding) {
+        top = window.innerHeight - previewRect.height - viewportPadding;
+      }
+
+      if (top < viewportPadding) {
+        top = viewportPadding;
+      }
+
+      preview.style.left = `${left}px`;
+      preview.style.top = `${top}px`;
+    };
+
+    const hidePreview = () => {
+      hidePreviewTimeout = setTimeout(() => {
+        if (previewElement) {
+          previewElement.remove();
+          previewElement = null;
+        }
+      }, 100);
+    };
+
+    const closePanel = () => {
+      if (previewElement) {
+        previewElement.remove();
+        previewElement = null;
+      }
+      if (hidePreviewTimeout) {
+        clearTimeout(hidePreviewTimeout);
+        hidePreviewTimeout = null;
+      }
+      if (panelElement) {
+        panelElement.remove();
+        panelElement = null;
+        btn.classList.remove("active");
+        window.removeEventListener("scroll", updatePanelPosition);
+        window.removeEventListener("resize", updatePanelPosition);
+      }
+    };
+
+    const renderTabs = () => {
+      if (!panelElement) return;
+      const tabsContainer = panelElement.querySelector(
+        ".agentation-term-category-tabs",
+      );
+
+      const categories = window.agentationDesignTerms.categories;
+      tabsContainer.innerHTML = categories
+        .map(
+          (cat) =>
+            `<button class="agentation-term-category-tab ${cat.id === currentCategory ? "active" : ""}" data-id="${cat.id}">
+              ${settings.language === "ko" ? cat.nameKo : cat.name}
+            </button>`,
+        )
+        .join("");
+
+      tabsContainer
+        .querySelectorAll(".agentation-term-category-tab")
+        .forEach((tab) => {
+          tab.addEventListener("click", (e) => {
+            e.stopPropagation();
+            currentCategory = tab.dataset.id;
+            renderTabs();
+            renderList();
+          });
+        });
+    };
+
+    const renderList = () => {
+      if (!panelElement) return;
+      const listContainer = panelElement.querySelector(".agentation-term-list");
+
+      const terms = window.agentationDesignTerms.getByCategory(currentCategory);
+      listContainer.innerHTML = terms
+        .map((term) => {
+          const isSelected = selectedTermIds.includes(term.id);
+          const description =
+            settings.language === "ko"
+              ? term.descriptionKo || term.description
+              : term.description;
+          return `
+            <div class="agentation-term-item ${isSelected ? "selected" : ""}" data-id="${term.id}">
+              <div class="agentation-term-icon">${term.icon}</div>
+              <div class="agentation-term-content">
+                <div class="agentation-term-name">${term.term}</div>
+                <div class="agentation-term-subtitle">${term.subtitle}</div>
+                <div class="agentation-term-description">${description}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+
+      listContainer
+        .querySelectorAll(".agentation-term-item")
+        .forEach((item) => {
+          const termId = item.dataset.id;
+          const term = window.agentationDesignTerms.getById(termId);
+
+          item.addEventListener("mouseenter", () => {
+            if (term) showPreview(term, item);
+          });
+
+          item.addEventListener("mouseleave", hidePreview);
+
+          item.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const id = item.dataset.id;
+            if (selectedTermIds.includes(id)) {
+              selectedTermIds = selectedTermIds.filter((t) => t !== id);
+            } else {
+              selectedTermIds.push(id);
+            }
+
+            renderList();
+            renderSelected();
+            if (onChange) onChange(selectedTermIds);
+          });
+        });
+    };
+
+    const renderSelected = () => {
+      selectedContainer.innerHTML = selectedTermIds
+        .map((id) => {
+          const term = window.agentationDesignTerms.getById(id);
+          if (!term) return "";
+          return `
+            <span class="agentation-term-chip">
+              ${term.icon} ${term.term}
+              <button data-id="${id}">×</button>
+            </span>
+          `;
+        })
+        .join("");
+
+      selectedContainer.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          selectedTermIds = selectedTermIds.filter((t) => t !== id);
+          renderSelected();
+          if (panelElement) renderList();
+          if (onChange) onChange(selectedTermIds);
+        });
+      });
+    };
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+
+      if (panelElement) {
+        closePanel();
+      } else {
+        createPanel();
+        btn.classList.add("active");
+      }
+    });
+
+    const handleGlobalClick = (e) => {
+      if (
+        panelElement &&
+        !panelElement.contains(e.target) &&
+        !btn.contains(e.target)
+      ) {
+        closePanel();
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && panelElement) {
+        closePanel();
+      }
+    };
+
+    document.addEventListener("click", handleGlobalClick, true);
+    document.addEventListener("keydown", handleKeyDown);
+
+    renderSelected();
+
+    container.cleanup = () => {
+      closePanel();
+      document.removeEventListener("click", handleGlobalClick, true);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+
+    return {
+      getSelectedTerms: () => selectedTermIds,
+    };
+  }
+
   function onClick(e) {
     if (!isActive) return;
 
@@ -582,14 +949,25 @@
 
     dragStartPos = null;
 
+    const existingPopover = document.querySelector(".agentation-popover");
+    const existingPopoverOverlay = document.querySelector(
+      ".agentation-popover-overlay",
+    );
+    const existingModal = document.querySelector(".agentation-modal-overlay");
+    if (existingPopover || existingPopoverOverlay || existingModal) {
+      return;
+    }
+
     const target = e.target;
     if (
       target.closest(".agentation-toolbar") ||
       target.closest(".agentation-modal-overlay") ||
+      target.closest(".agentation-popover-overlay") ||
       target.closest(".agentation-popover") ||
       target.closest(".agentation-marker") ||
       target.closest(".agentation-group-marker") ||
-      target.closest(".agentation-settings-panel")
+      target.closest(".agentation-settings-panel") ||
+      target.closest(".agentation-design-terms-panel")
     ) {
       return;
     }
@@ -601,13 +979,18 @@
   }
 
   function showAnnotationModal(element) {
+    const existingOverlay = document.querySelector(
+      ".agentation-popover-overlay",
+    );
     const existingPopover = document.querySelector(".agentation-popover");
-    if (existingPopover) {
-      existingPopover.remove();
-    }
+    if (existingOverlay) existingOverlay.remove();
+    if (existingPopover) existingPopover.remove();
 
     const selector = getUniqueSelector(element);
     const rect = element.getBoundingClientRect();
+
+    const overlay = document.createElement("div");
+    overlay.className = "agentation-popover-overlay";
 
     const popover = document.createElement("div");
     popover.className = "agentation-popover";
@@ -615,6 +998,7 @@
     popover.innerHTML = `
       <div class="agentation-popover-arrow"></div>
       <div class="agentation-modal-selector">${selector}</div>
+      ${createDesignTermsHTML()}
       <textarea class="agentation-modal-textarea" placeholder="${t("directSendPlaceholder")}" autofocus></textarea>
       <div class="agentation-modal-actions">
         <button class="agentation-btn agentation-btn-cancel">${t("cancel")}</button>
@@ -623,7 +1007,12 @@
       </div>
     `;
 
+    document.body.appendChild(overlay);
     document.body.appendChild(popover);
+
+    const designTermsUI = initializeDesignTermsUI(
+      popover.querySelector(".agentation-design-terms-container"),
+    );
 
     const popoverWidth = 320;
     const popoverHeight = 200;
@@ -679,23 +1068,20 @@
     setTimeout(() => textarea.focus(), 10);
 
     const closeModal = () => {
+      if (
+        popover.querySelector(".agentation-design-terms-container")?.cleanup
+      ) {
+        popover.querySelector(".agentation-design-terms-container").cleanup();
+      }
       popover.remove();
-      document.removeEventListener("click", handleOutsideClick, true);
+      overlay.remove();
       if (hoveredElement) {
         hoveredElement.classList.remove("agentation-highlight");
         hoveredElement = null;
       }
     };
 
-    const handleOutsideClick = (e) => {
-      if (!popover.contains(e.target) && e.target !== element) {
-        closeModal();
-      }
-    };
-
-    setTimeout(() => {
-      document.addEventListener("click", handleOutsideClick, true);
-    }, 0);
+    overlay.addEventListener("click", closeModal);
 
     cancelBtn.addEventListener("click", closeModal);
 
@@ -711,6 +1097,7 @@
         selector,
         description: getElementDescription(element),
         feedback,
+        designTerms: designTermsUI.getSelectedTerms(),
         position: {
           top: rect.top + window.scrollY,
           left: rect.left + window.scrollX,
@@ -762,6 +1149,7 @@
             selector,
             description: getElementDescription(element),
             feedback,
+            designTerms: designTermsUI.getSelectedTerms(),
             position: {
               top: rect.top + window.scrollY,
               left: rect.left + window.scrollX,
@@ -1169,6 +1557,17 @@
         });
         md += `\n`;
 
+        if (annotation.designTerms && annotation.designTerms.length > 0) {
+          md += `**${t("designReferences")}:**\n`;
+          annotation.designTerms.forEach((termId) => {
+            const term = window.agentationDesignTerms.getById(termId);
+            if (term) {
+              md += `- ${term.prompt}\n`;
+            }
+          });
+          md += `\n`;
+        }
+
         if (settings.outputDetail === "detailed") {
           md += `**Bounding Box:** top: ${Math.round(annotation.boundingBox.top)}px, left: ${Math.round(annotation.boundingBox.left)}px, ${Math.round(annotation.boundingBox.width)}x${Math.round(annotation.boundingBox.height)}px\n\n`;
           md += `**Timestamp:** ${annotation.timestamp}\n\n`;
@@ -1176,6 +1575,17 @@
       } else {
         md += `## ${index + 1}. ${annotation.description}\n\n`;
         md += `**Selector:** \`${annotation.selector}\`\n\n`;
+
+        if (annotation.designTerms && annotation.designTerms.length > 0) {
+          md += `**${t("designReferences")}:**\n`;
+          annotation.designTerms.forEach((termId) => {
+            const term = window.agentationDesignTerms.getById(termId);
+            if (term) {
+              md += `- ${term.prompt}\n`;
+            }
+          });
+          md += `\n`;
+        }
 
         if (settings.outputDetail === "detailed") {
           md += `**Position:** top: ${Math.round(annotation.position.top)}px, left: ${Math.round(annotation.position.left)}px\n\n`;

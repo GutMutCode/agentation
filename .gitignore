@@ -19,6 +19,12 @@ dist/
 # Downloaded OpenCode binary
 .opencode/
 
+# AI/Dev tools
+.claude/
+.codex/
+.mcp.json
+tmp/
+
 # Package manager
 pnpm-lock.yaml
 package-lock.json

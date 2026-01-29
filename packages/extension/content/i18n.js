@@ -74,6 +74,9 @@
 
       // Misc
       moreElements: "+{count} more elements",
+      designTerms: "Design Terms",
+      addDesignTerm: "Choose Design Style",
+      designReferences: "Design References",
 
       // Annotation list modal
       noAnnotationsToManage: "No annotations to manage",
@@ -154,6 +157,9 @@
 
       // Misc
       moreElements: "+{count}개 더",
+      designTerms: "디자인 용어",
+      addDesignTerm: "원하는 디자인 선택",
+      designReferences: "디자인 참조",
 
       // Annotation list modal
       noAnnotationsToManage: "관리할 어노테이션이 없습니다",
