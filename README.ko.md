@@ -229,6 +229,45 @@ agentation
 8. **OpenCode TUI에서:** 샘플링 요청 승인 (Allow/Deny 대화상자)
 9. OpenCode 세션에서 **대화 계속**
 
+## 디자인 용어
+
+요소에 어노테이션을 추가할 때 **디자인 용어**를 선택하여 디자인 의도를 더 정확하게 전달할 수 있습니다.
+
+### 사용 방법
+
+1. 요소를 클릭하여 어노테이션 팝업 열기
+2. **"원하는 디자인 선택"** 버튼 클릭
+3. 카테고리 탐색: 레이아웃, 인터랙션, 피드백, 비주얼, 애니메이션, 컨셉
+4. 용어 위에 **마우스를 올리면** **라이브 프리뷰 데모** 표시
+5. **클릭**하여 선택 (복수 선택 가능)
+6. 선택된 용어는 버튼 아래에 칩으로 표시
+7. 피드백 전송 — 디자인 용어가 자동으로 포함됨
+
+### 제공되는 용어 (총 40개)
+
+| 카테고리       | 예시                                                        |
+| -------------- | ----------------------------------------------------------- |
+| **레이아웃**   | GNB, Sticky Header, Hero Section, Card Grid, Masonry        |
+| **인터랙션**   | Hover Effect, Drag & Drop, Infinite Scroll, Pull to Refresh |
+| **피드백**     | Toast, Skeleton Loading, Progress Bar, Empty State          |
+| **비주얼**     | Glassmorphism, Neumorphism, Gradient, Blur Effect           |
+| **애니메이션** | Fade, Slide, Bounce, Morph, Parallax                        |
+| **컨셉**       | Dark Mode, Responsive, Accessibility, Micro-interaction     |
+
+### 출력 예시
+
+디자인 용어를 선택하면 AI 프롬프트에 다음과 같이 포함됩니다:
+
+```markdown
+**Design References:**
+
+- Glassmorphism - 반투명 유리 효과 (blur + transparency)
+- Skeleton Loading - 콘텐츠 로딩 중 뼈대 표시
+
+**Feedback:**
+이 카드를 더 모던하게 만들어주세요
+```
+
 ## 문제 해결
 
 ### WebSocket 연결 안됨

@@ -229,6 +229,45 @@ agentation
 8. **In OpenCode TUI:** Approve the sampling request (Allow/Deny dialog)
 9. **Continue conversation** in the OpenCode session
 
+## Design Terms
+
+When annotating elements, you can select **design terms** to communicate your design intent more precisely.
+
+### How to Use
+
+1. Click on an element to open the annotation popup
+2. Click **"Choose Design Style"** button
+3. Browse categories: Layout, Interaction, Feedback, Visual, Animation, Concept
+4. **Hover** over a term to see a **live preview demo**
+5. **Click** to select (multiple selections allowed)
+6. Selected terms appear as chips below the button
+7. Send feedback — design terms are included automatically
+
+### Available Terms (40 total)
+
+| Category        | Examples                                                    |
+| --------------- | ----------------------------------------------------------- |
+| **Layout**      | GNB, Sticky Header, Hero Section, Card Grid, Masonry        |
+| **Interaction** | Hover Effect, Drag & Drop, Infinite Scroll, Pull to Refresh |
+| **Feedback**    | Toast, Skeleton Loading, Progress Bar, Empty State          |
+| **Visual**      | Glassmorphism, Neumorphism, Gradient, Blur Effect           |
+| **Animation**   | Fade, Slide, Bounce, Morph, Parallax                        |
+| **Concept**     | Dark Mode, Responsive, Accessibility, Micro-interaction     |
+
+### Example Output
+
+When you select design terms, they appear in the AI prompt:
+
+```markdown
+**Design References:**
+
+- Glassmorphism - 반투명 유리 효과 (blur + transparency)
+- Skeleton Loading - 콘텐츠 로딩 중 뼈대 표시
+
+**Feedback:**
+Make this card look more modern
+```
+
 ## Troubleshooting
 
 ### WebSocket not connected
