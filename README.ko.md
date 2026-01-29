@@ -87,6 +87,25 @@ git clone https://github.com/GutMutCode/agentation.git && cd agentation && ./set
 ./setup.sh --force      # 이미 설치되어 있어도 다시 다운로드/빌드
 ```
 
+### 업데이트
+
+Agentation은 **매 실행 시 자동으로 업데이트**됩니다. agentation 코드와 OpenCode 바이너리 모두 자동으로 확인하고 업데이트합니다.
+
+**기존 사용자** (자동 업데이트 기능 추가 전에 설치한 경우):
+
+```bash
+cd agentation
+git pull
+./setup.sh --force      # 자동 업데이트가 포함된 wrapper 스크립트 재생성
+```
+
+**수동 업데이트** (필요한 경우):
+
+```bash
+./update.sh             # 지금 확인하고 업데이트
+./update.sh --force     # 최신 버전이어도 강제 다운로드
+```
+
 ### 수동 설정
 
 <details>

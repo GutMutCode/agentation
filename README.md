@@ -87,6 +87,25 @@ Then load Chrome extension: `chrome://extensions/` → Developer mode → Load u
 ./setup.sh --force      # Re-download/rebuild even if already installed
 ```
 
+### Updating
+
+Agentation **auto-updates on every startup**. Both the agentation code and OpenCode binary are automatically checked and updated.
+
+**For existing users** (installed before auto-update feature):
+
+```bash
+cd agentation
+git pull
+./setup.sh --force      # Regenerate wrapper script with auto-update
+```
+
+**Manual update** (if needed):
+
+```bash
+./update.sh             # Check and update now
+./update.sh --force     # Force re-download even if up-to-date
+```
+
 ### Manual Setup
 
 <details>
