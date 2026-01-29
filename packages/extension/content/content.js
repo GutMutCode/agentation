@@ -400,7 +400,8 @@
         <textarea class="agentation-modal-textarea" placeholder="${t("groupAnnotationPlaceholder")}" autofocus></textarea>
         <div class="agentation-modal-actions">
           <button class="agentation-btn agentation-btn-cancel">${t("cancel")}</button>
-          <button class="agentation-btn agentation-btn-add">${t("addGroupAnnotation")}</button>
+          <button class="agentation-btn agentation-btn-add">${t("add")}</button>
+          <button class="agentation-btn agentation-btn-ai" style="background: #8b5cf6; color: white;">${t("directSendToAI")}</button>
         </div>
       </div>
     `;
@@ -410,6 +411,7 @@
     const textarea = overlay.querySelector(".agentation-modal-textarea");
     const cancelBtn = overlay.querySelector(".agentation-btn-cancel");
     const addBtn = overlay.querySelector(".agentation-btn-add");
+    const aiBtn = overlay.querySelector(".agentation-btn-ai");
 
     setTimeout(() => textarea.focus(), 10);
 
@@ -456,6 +458,87 @@
     };
 
     addBtn.addEventListener("click", addGroupAnnotation);
+
+    aiBtn.addEventListener("click", async () => {
+      const feedback = textarea.value.trim();
+      if (!feedback) {
+        textarea.focus();
+        return;
+      }
+
+      aiBtn.disabled = true;
+      aiBtn.textContent = t("sending");
+
+      if (!mcpConnected && window.agentationWS) {
+        try {
+          await connectToMCP();
+        } catch (error) {
+          showToast(t("mcpConnectionFailed"));
+          aiBtn.disabled = false;
+          aiBtn.textContent = t("directSendToAI");
+          return;
+        }
+      }
+
+      if (!mcpConnected) {
+        showToast(t("mcpDisconnected"));
+        aiBtn.disabled = false;
+        aiBtn.textContent = t("directSendToAI");
+        return;
+      }
+
+      try {
+        const tempAnnotation = [
+          {
+            id: Date.now(),
+            isGroup: true,
+            selectors,
+            descriptions,
+            feedback,
+            position: {
+              top: boundingBox.top + window.scrollY,
+              left: boundingBox.left + window.scrollX,
+            },
+            boundingBox: {
+              top: boundingBox.top + window.scrollY,
+              left: boundingBox.left + window.scrollX,
+              width: boundingBox.width,
+              height: boundingBox.height,
+            },
+            timestamp: new Date().toISOString(),
+          },
+        ];
+
+        let context = "";
+        if (settings.includePlaywrightHint) {
+          context = t("playwrightHintPrompt");
+        }
+
+        await window.agentationWS.submitFeedback(tempAnnotation, context);
+
+        closeModal();
+        showToast(t("sentToAI"));
+
+        if (isActive) {
+          isActive = false;
+          chrome.runtime.sendMessage({ type: "SET_STATE", isActive: false });
+          updateToolbarButtons();
+          if (hoveredElement) {
+            hoveredElement.classList.remove("agentation-highlight");
+            hoveredElement = null;
+            hideLabel();
+          }
+          if (settings.blockInteractions) {
+            document.body.classList.remove("agentation-block-interactions");
+          }
+        }
+      } catch (error) {
+        showToast(t("sendFailed") + error.message);
+        aiBtn.disabled = false;
+        aiBtn.textContent = t("directSendToAI");
+      }
+    });
+
     textarea.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
         addGroupAnnotation();
