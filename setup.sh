@@ -264,6 +264,13 @@ download_opencode() {
     $extract_cmd "$archive_name"
     rm "$archive_name"
 
+    local version_file="$OPENCODE_BIN_DIR/version"
+    local latest_version
+    if command -v curl &> /dev/null; then
+        latest_version=$(curl -fsSL "https://api.github.com/repos/GutMutCode/opencode/releases/latest" 2>/dev/null | grep -o '"tag_name"[^,]*' | head -1 | cut -d'"' -f4)
+    fi
+    [[ -n "$latest_version" ]] && echo "$latest_version" > "$version_file"
+
     print_success "OpenCode binary installed to $binary_dir"
 }
 
@@ -354,6 +361,8 @@ create_symlink() {
         source_bin="$OPENCODE_BIN_DIR/opencode-$platform/bin/opencode"
     fi
 
+    local update_script="$SCRIPT_DIR/update.sh"
+
     if [[ "$platform" == "windows-x64" ]]; then
         source_bin="${source_bin}.exe"
         local target_cmd="$bin_dir/agentation.cmd"
@@ -362,6 +371,10 @@ create_symlink() {
 
         cat > "$target_cmd" <<EOF
 @echo off
+REM Auto-update before running
+if exist "$update_script" (
+    bash "$update_script" --quiet
+)
 set OPENCODE_CONFIG=$CONFIG_FILE
 "$source_bin" %*
 EOF
@@ -391,6 +404,10 @@ EOF
 
     cat > "$target_bin" <<EOF
 #!/bin/bash
+# Auto-update before running
+if [[ -f "$update_script" ]]; then
+    "$update_script" --quiet 2>/dev/null || true
+fi
 export OPENCODE_CONFIG="$CONFIG_FILE"
 exec "$source_bin" "\$@"
 EOF
