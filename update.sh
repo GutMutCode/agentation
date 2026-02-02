@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
 CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Script directory (agentation root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 OPENCODE_BIN_DIR="$SCRIPT_DIR/.opencode"
 VERSION_FILE="$OPENCODE_BIN_DIR/version"
@@ -17,24 +14,49 @@ GITHUB_REPO="GutMutCode/opencode"
 GITHUB_API="https://api.github.com/repos/$GITHUB_REPO/releases/latest"
 GITHUB_RELEASE="https://github.com/$GITHUB_REPO/releases/latest/download"
 
-# Options
 QUIET=false
+INLINE=false
 FORCE=false
 
+CODE_STATUS="skip"
+RUNTIME_STATUS="skip"
+CODE_UPDATED=false
+RUNTIME_UPDATED=false
+
+print_inline() {
+    [[ "$INLINE" == true ]] && echo -e "${CYAN}agentation >${NC} ${1}"
+}
+
 print_info() {
-    [[ "$QUIET" == false ]] && echo -e "${CYAN}[update]${NC} ${1}"
+    if [[ "$INLINE" == true ]]; then
+        print_inline "$1"
+    elif [[ "$QUIET" == false ]]; then
+        echo -e "${CYAN}[update]${NC} ${1}"
+    fi
 }
 
 print_success() {
-    [[ "$QUIET" == false ]] && echo -e "${GREEN}[update]${NC} ${1}"
+    if [[ "$INLINE" == true ]]; then
+        print_inline "$1"
+    elif [[ "$QUIET" == false ]]; then
+        echo -e "${GREEN}[update]${NC} ${1}"
+    fi
 }
 
 print_warning() {
-    [[ "$QUIET" == false ]] && echo -e "${YELLOW}[update]${NC} ${1}"
+    if [[ "$INLINE" == true ]]; then
+        print_inline "$1"
+    elif [[ "$QUIET" == false ]]; then
+        echo -e "${YELLOW}[update]${NC} ${1}"
+    fi
 }
 
 print_error() {
-    echo -e "${RED}[update]${NC} ${1}" >&2
+    if [[ "$INLINE" == true ]]; then
+        echo -e "${RED}agentation >${NC} ${1}" >&2
+    else
+        echo -e "${RED}[update]${NC} ${1}" >&2
+    fi
 }
 
 usage() {
@@ -42,23 +64,28 @@ usage() {
 Usage: ./update.sh [OPTIONS]
 
 Options:
-    --quiet, -q     Suppress non-error output
+    --quiet, -q     Suppress all output
+    --inline, -i    Show progress in "agentation > message" format
     --force, -f     Force update even if up-to-date
     -h, --help      Show this help message
 
 Examples:
     ./update.sh             # Check and update if needed
-    ./update.sh --quiet     # Silent mode (for wrapper script)
+    ./update.sh --quiet     # Silent mode
+    ./update.sh --inline    # Progress mode for wrapper script
     ./update.sh --force     # Force re-download
 EOF
     exit 0
 }
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --quiet|-q)
             QUIET=true
+            shift
+            ;;
+        --inline|-i)
+            INLINE=true
             shift
             ;;
         --force|-f)
@@ -74,7 +101,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Detect OS and architecture
 detect_platform() {
     local os arch
 
@@ -94,7 +120,6 @@ detect_platform() {
     echo "${os}-${arch}"
 }
 
-# Get current OpenCode version from version file
 get_current_version() {
     if [[ -f "$VERSION_FILE" ]]; then
         cat "$VERSION_FILE"
@@ -103,7 +128,6 @@ get_current_version() {
     fi
 }
 
-# Get latest OpenCode version from GitHub
 get_latest_version() {
     local response version
     
@@ -118,20 +142,16 @@ get_latest_version() {
     echo "${version:-unknown}"
 }
 
-# Update agentation code from git
-update_agentation() {
+update_code() {
     cd "$SCRIPT_DIR"
     
-    # Check if git repo
     if [[ ! -d ".git" ]]; then
-        print_warning "Not a git repository, skipping agentation update"
+        CODE_STATUS="skip"
         return 0
     fi
     
-    # Fetch latest changes
-    print_info "Checking for agentation updates..."
     git fetch origin main --quiet 2>/dev/null || {
-        print_warning "Failed to fetch from origin, skipping git update"
+        CODE_STATUS="skip"
         return 0
     }
     
@@ -140,30 +160,25 @@ update_agentation() {
     REMOTE_HEAD=$(git rev-parse origin/main 2>/dev/null)
     
     if [[ "$LOCAL_HEAD" == "$REMOTE_HEAD" && "$FORCE" == false ]]; then
-        print_info "Agentation is up-to-date"
+        CODE_STATUS="ok"
         return 0
     fi
     
-    print_info "Updating agentation..."
+    print_info "Updating code..."
     
-    # Check for uncommitted changes
     if [[ -n $(git status --porcelain 2>/dev/null) ]]; then
-        print_warning "Uncommitted changes detected, stashing..."
         git stash push -m "auto-stash before update" --quiet
         local STASHED=true
     fi
     
-    # Pull latest
     git pull origin main --quiet || {
-        print_error "Failed to pull updates"
+        print_error "Code update failed"
         [[ "${STASHED:-false}" == true ]] && git stash pop --quiet
+        CODE_STATUS="fail"
         return 1
     }
     
-    # Rebuild if needed
     if [[ -f "package.json" ]]; then
-        print_info "Rebuilding agentation..."
-        
         local PKG_MANAGER
         if command -v pnpm &> /dev/null; then
             PKG_MANAGER="pnpm"
@@ -175,49 +190,46 @@ update_agentation() {
         $PKG_MANAGER run build >/dev/null 2>&1 || {
             print_error "Build failed"
             [[ "${STASHED:-false}" == true ]] && git stash pop --quiet
+            CODE_STATUS="fail"
             return 1
         }
     fi
     
-    # Restore stash
     [[ "${STASHED:-false}" == true ]] && git stash pop --quiet
     
-    print_success "Agentation updated successfully"
+    CODE_STATUS="ok"
+    CODE_UPDATED=true
     return 0
 }
 
-# Update OpenCode binary
-update_opencode() {
+update_runtime() {
     local platform="$1"
     
     if [[ "$platform" == "unknown" ]]; then
-        print_warning "Unknown platform, skipping OpenCode update"
+        RUNTIME_STATUS="skip"
         return 0
     fi
     
-    # macOS Intel must build from source
     if [[ "$platform" == "darwin-x64" ]]; then
-        print_warning "macOS Intel requires building from source, skipping binary update"
+        RUNTIME_STATUS="skip"
         return 0
     fi
-    
-    print_info "Checking for OpenCode updates..."
     
     local current_version latest_version
     current_version=$(get_current_version)
     latest_version=$(get_latest_version)
     
     if [[ "$latest_version" == "unknown" ]]; then
-        print_warning "Could not fetch latest version, skipping OpenCode update"
+        RUNTIME_STATUS="skip"
         return 0
     fi
     
     if [[ "$current_version" == "$latest_version" && "$FORCE" == false ]]; then
-        print_info "OpenCode is up-to-date ($current_version)"
+        RUNTIME_STATUS="ok"
         return 0
     fi
     
-    print_info "Updating OpenCode: $current_version -> $latest_version"
+    print_info "Updating runtime: $current_version → $latest_version"
     
     local archive_name extract_cmd
     local binary_dir="$OPENCODE_BIN_DIR/opencode-$platform"
@@ -235,59 +247,111 @@ update_opencode() {
     
     mkdir -p "$OPENCODE_BIN_DIR"
     
-    # Download
-    print_info "Downloading $archive_name..."
     if command -v curl &> /dev/null; then
         curl -fsSL "$download_url" -o "$archive_path" || {
             print_error "Download failed"
+            RUNTIME_STATUS="fail"
             return 1
         }
     elif command -v wget &> /dev/null; then
         wget -q "$download_url" -O "$archive_path" || {
             print_error "Download failed"
+            RUNTIME_STATUS="fail"
             return 1
         }
     else
         print_error "Neither curl nor wget found"
+        RUNTIME_STATUS="fail"
         return 1
     fi
     
-    # Remove old binary
     [[ -d "$binary_dir" ]] && rm -rf "$binary_dir"
     
-    # Extract
-    print_info "Extracting..."
     cd "$OPENCODE_BIN_DIR"
     $extract_cmd "$archive_name"
     rm -f "$archive_name"
     
-    # Save version
     echo "$latest_version" > "$VERSION_FILE"
     
-    print_success "OpenCode updated to $latest_version"
+    RUNTIME_STATUS="ok"
+    RUNTIME_UPDATED=true
     return 0
 }
 
-# Main
+update_wrapper() {
+    local platform="$1"
+    local bin_dir="$HOME/.local/bin"
+    local wrapper="$bin_dir/agentation"
+    local config_file="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agentation.json"
+    local source_bin="$OPENCODE_BIN_DIR/opencode-$platform/bin/opencode"
+    local update_script="$SCRIPT_DIR/update.sh"
+    
+    [[ ! -f "$wrapper" ]] && return 0
+    
+    local expected_wrapper
+    expected_wrapper=$(cat <<EOF
+#!/bin/bash
+if [[ -f "$update_script" ]]; then
+    "$update_script" --inline || true
+fi
+export OPENCODE_CONFIG="$config_file"
+exec "$source_bin" "\$@"
+EOF
+)
+    
+    local current_wrapper
+    current_wrapper=$(cat "$wrapper" 2>/dev/null || echo "")
+    
+    if [[ "$current_wrapper" != "$expected_wrapper" ]]; then
+        echo "$expected_wrapper" > "$wrapper"
+        chmod +x "$wrapper"
+    fi
+}
+
+print_summary() {
+    if [[ "$INLINE" != true && "$QUIET" == true ]]; then
+        return 0
+    fi
+
+    local code_icon runtime_icon
+    
+    case "$CODE_STATUS" in
+        ok) code_icon="✓" ;;
+        skip) code_icon="-" ;;
+        fail) code_icon="✗" ;;
+    esac
+    
+    case "$RUNTIME_STATUS" in
+        ok) runtime_icon="✓" ;;
+        skip) runtime_icon="-" ;;
+        fail) runtime_icon="✗" ;;
+    esac
+    
+    if [[ "$CODE_UPDATED" == true || "$RUNTIME_UPDATED" == true ]]; then
+        print_success "Updated (code: $code_icon, runtime: $runtime_icon)"
+    elif [[ "$CODE_STATUS" == "fail" || "$RUNTIME_STATUS" == "fail" ]]; then
+        print_error "Update failed (code: $code_icon, runtime: $runtime_icon)"
+    else
+        print_info "Up-to-date (code: $code_icon, runtime: $runtime_icon)"
+    fi
+}
+
 main() {
     local platform
     platform=$(detect_platform)
     
-    local agentation_result=0
-    local opencode_result=0
+    print_info "Checking for updates..."
     
-    # Update agentation
-    update_agentation || agentation_result=$?
+    update_code || true
+    update_runtime "$platform" || true
+    update_wrapper "$platform"
     
-    # Update OpenCode binary
-    update_opencode "$platform" || opencode_result=$?
+    print_summary
     
-    # Return success if at least one succeeded or both skipped
-    if [[ $agentation_result -eq 0 && $opencode_result -eq 0 ]]; then
-        return 0
-    else
+    if [[ "$CODE_STATUS" == "fail" || "$RUNTIME_STATUS" == "fail" ]]; then
         return 1
     fi
+    return 0
 }
 
 main "$@"

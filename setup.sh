@@ -371,9 +371,8 @@ create_symlink() {
 
         cat > "$target_cmd" <<EOF
 @echo off
-REM Auto-update before running
 if exist "$update_script" (
-    bash "$update_script" --quiet
+    bash "$update_script" --inline
 )
 set OPENCODE_CONFIG=$CONFIG_FILE
 "$source_bin" %*
@@ -404,9 +403,8 @@ EOF
 
     cat > "$target_bin" <<EOF
 #!/bin/bash
-# Auto-update before running
 if [[ -f "$update_script" ]]; then
-    "$update_script" --quiet 2>/dev/null || true
+    "$update_script" --inline || true
 fi
 export OPENCODE_CONFIG="$CONFIG_FILE"
 exec "$source_bin" "\$@"
