@@ -22,7 +22,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@agentation/shared": "file:../shared",
+    "@agentation/shared": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.0.0",
     "ws": "^8.18.0",
     "zod": "^3.24.0"
