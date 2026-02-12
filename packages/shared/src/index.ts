@@ -45,12 +45,12 @@ export type Annotation = SingleAnnotation | GroupAnnotation;
 // ============================================================================
 
 export type WebSocketMessageType =
-  | 'connect'
-  | 'disconnect'
-  | 'submit-feedback'
-  | 'feedback-result'
-  | 'status'
-  | 'error';
+  | "connect"
+  | "disconnect"
+  | "submit-feedback"
+  | "feedback-result"
+  | "status"
+  | "error";
 
 export interface WebSocketMessage<T = unknown> {
   type: WebSocketMessageType;
@@ -95,7 +95,7 @@ export interface ErrorPayload {
 // ============================================================================
 
 export interface SamplingTrustLevel {
-  mode: 'auto' | 'prompt' | 'deny';
+  mode: "auto" | "prompt" | "deny";
   maxTokens?: number;
   dailyLimit?: number;
 }
@@ -116,14 +116,14 @@ export interface SamplingRequest {
 }
 
 export interface SamplingMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: SamplingContent;
 }
 
 export type SamplingContent =
-  | { type: 'text'; text: string }
-  | { type: 'image'; data: string; mimeType: string }
-  | { type: 'audio'; data: string; mimeType: string };
+  | { type: "text"; text: string }
+  | { type: "image"; data: string; mimeType: string }
+  | { type: "audio"; data: string; mimeType: string };
 
 export interface ModelPreferences {
   hints?: { name: string }[];
@@ -133,7 +133,7 @@ export interface ModelPreferences {
 }
 
 export interface SamplingResponse {
-  role: 'assistant';
+  role: "assistant";
   content: SamplingContent;
   model: string;
   stopReason?: string;
@@ -144,9 +144,8 @@ export interface SamplingResponse {
 // ============================================================================
 
 export interface ExtensionSettings {
-  outputDetail: 'standard' | 'detailed';
+  outputDetail: "standard" | "detailed";
   markerColor: string;
-  clearAfterCopy: boolean;
   blockInteractions: boolean;
   mcpServerUrl?: string;
   autoConnect?: boolean;
@@ -160,9 +159,9 @@ export const DEFAULT_MCP_SERVER_PORT = 19989;
 export const DEFAULT_WEBSOCKET_URL = `ws://localhost:${DEFAULT_MCP_SERVER_PORT}`;
 
 export const ERROR_CODES = {
-  CONNECTION_FAILED: 'CONNECTION_FAILED',
-  SAMPLING_DENIED: 'SAMPLING_DENIED',
-  SAMPLING_TIMEOUT: 'SAMPLING_TIMEOUT',
-  INVALID_MESSAGE: 'INVALID_MESSAGE',
-  SERVER_ERROR: 'SERVER_ERROR',
+  CONNECTION_FAILED: "CONNECTION_FAILED",
+  SAMPLING_DENIED: "SAMPLING_DENIED",
+  SAMPLING_TIMEOUT: "SAMPLING_TIMEOUT",
+  INVALID_MESSAGE: "INVALID_MESSAGE",
+  SERVER_ERROR: "SERVER_ERROR",
 } as const;

@@ -19,7 +19,6 @@
   let settings = {
     outputDetail: "standard",
     markerColor: "#ef4444",
-    clearAfterCopy: false,
     blockInteractions: false,
     includePlaywrightHint: false,
     language: "en",
@@ -1611,14 +1610,12 @@
       await navigator.clipboard.writeText(md);
       showToast(t("copiedAnnotations", { count: annotations.length }));
 
-      if (settings.clearAfterCopy) {
-        annotations = [];
-        saveAnnotations();
-        updateToolbarBadge();
-        document
-          .querySelectorAll(".agentation-marker, .agentation-group-marker")
-          .forEach((m) => m.remove());
-      }
+      annotations = [];
+      saveAnnotations();
+      updateToolbarBadge();
+      document
+        .querySelectorAll(".agentation-marker, .agentation-group-marker")
+        .forEach((m) => m.remove());
     } catch (err) {
       showToast(t("copyFailed"));
     }
@@ -1785,14 +1782,12 @@
             }
           }
 
-          if (settings.clearAfterCopy) {
-            annotations = [];
-            saveAnnotations();
-            updateToolbarBadge();
-            document
-              .querySelectorAll(".agentation-marker, .agentation-group-marker")
-              .forEach((m) => m.remove());
-          }
+          annotations = [];
+          saveAnnotations();
+          updateToolbarBadge();
+          document
+            .querySelectorAll(".agentation-marker, .agentation-group-marker")
+            .forEach((m) => m.remove());
         } catch (error) {
           showToast(t("sendFailed") + error.message);
           sendBtn.disabled = false;
@@ -1888,12 +1883,6 @@
           <button class="agentation-color-btn ${settings.markerColor === "#3b82f6" ? "active" : ""}" data-color="#3b82f6" style="background: #3b82f6;"></button>
           <button class="agentation-color-btn ${settings.markerColor === "#a855f7" ? "active" : ""}" data-color="#a855f7" style="background: #a855f7;"></button>
         </div>
-      </div>
-      <div class="agentation-settings-group">
-        <label class="agentation-settings-checkbox">
-          <input type="checkbox" data-setting="clearAfterCopy" ${settings.clearAfterCopy ? "checked" : ""}>
-          <span>${t("clearAfterCopy")}</span>
-        </label>
       </div>
       <div class="agentation-settings-group">
         <label class="agentation-settings-checkbox">

@@ -66,7 +66,6 @@
       standard: "Standard",
       detailed: "Detailed",
       markerColor: "Marker Color",
-      clearAfterCopy: "Clear after copy/send",
       blockInteractions: "Block page interactions",
       includePlaywrightHint: "Include Playwriter hint",
       playwrightHintPrompt:
@@ -149,7 +148,6 @@
       standard: "표준",
       detailed: "상세",
       markerColor: "마커 색상",
-      clearAfterCopy: "복사/전송 후 삭제",
       blockInteractions: "페이지 상호작용 차단",
       includePlaywrightHint: "Playwriter 힌트 포함",
       playwrightHintPrompt:
