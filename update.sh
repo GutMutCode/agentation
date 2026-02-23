@@ -232,15 +232,17 @@ update_runtime() {
     print_info "Updating runtime: $current_version → $latest_version"
     
     local archive_name extract_cmd
-    local binary_dir="$OPENCODE_BIN_DIR/opencode-$platform"
     
-    if [[ "$platform" == "windows-x64" ]]; then
-        archive_name="opencode-${platform}.zip"
-        extract_cmd="unzip -o -q"
-    else
-        archive_name="opencode-${platform}.tar.gz"
-        extract_cmd="tar -xzf"
-    fi
+    case "$platform" in
+        darwin-*|windows-*)
+            archive_name="opencode-${platform}.zip"
+            extract_cmd="unzip -o -q"
+            ;;
+        *)
+            archive_name="opencode-${platform}.tar.gz"
+            extract_cmd="tar -xzf"
+            ;;
+    esac
     
     local download_url="${GITHUB_RELEASE}/${archive_name}"
     local archive_path="${OPENCODE_BIN_DIR}/${archive_name}"
@@ -265,11 +267,10 @@ update_runtime() {
         return 1
     fi
     
-    [[ -d "$binary_dir" ]] && rm -rf "$binary_dir"
-    
     cd "$OPENCODE_BIN_DIR"
     $extract_cmd "$archive_name"
     rm -f "$archive_name"
+    chmod +x "$OPENCODE_BIN_DIR/opencode" 2>/dev/null || true
     
     echo "$latest_version" > "$VERSION_FILE"
     
@@ -283,7 +284,7 @@ update_wrapper() {
     local bin_dir="$HOME/.local/bin"
     local wrapper="$bin_dir/agentation"
     local config_file="${XDG_CONFIG_HOME:-$HOME/.config}/opencode/agentation.json"
-    local source_bin="$OPENCODE_BIN_DIR/opencode-$platform/bin/opencode"
+    local source_bin="$OPENCODE_BIN_DIR/opencode"
     local update_script="$SCRIPT_DIR/update.sh"
     
     [[ ! -f "$wrapper" ]] && return 0
