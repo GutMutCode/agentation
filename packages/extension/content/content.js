@@ -2075,6 +2075,11 @@
 
     document.body.appendChild(toolbar);
 
+    // Prevent toolbar interactions from closing page modals/menus
+    // (most close on mousedown/pointerdown outside, not click)
+    toolbar.addEventListener("mousedown", (e) => e.stopPropagation());
+    toolbar.addEventListener("pointerdown", (e) => e.stopPropagation());
+
     toolbar.addEventListener("click", (e) => {
       e.stopPropagation();
       const btn = e.target.closest("[data-action]");
